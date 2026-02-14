@@ -15,6 +15,7 @@ const Bookings = () => {
     const [view, setView] = useState('calendar'); // 'list' or 'calendar'
     const [showForm, setShowForm] = useState(false);
     const [selectedDateBookings, setSelectedDateBookings] = useState(null);
+    const [actionLoading, setActionLoading] = useState(null); // Track specific booking ID being updated
 
     const fetchBookings = useCallback(async () => {
         try {
@@ -75,11 +76,19 @@ const Bookings = () => {
         }
 
         try {
+            setActionLoading(id);
             await api.put(`/bookings/${id}`, { status, totalAmount: finalAmount });
+
+            // Close the modal after success
+            setSelectedDateBookings(null);
+
+            // Refresh data
             fetchBookings();
-            setSelectedDateBookings(prev => prev ? prev.map(b => b._id === id ? { ...b, status, totalAmount: finalAmount } : b) : null);
         } catch (error) {
             console.error(error);
+            alert("Failed to update booking status");
+        } finally {
+            setActionLoading(null);
         }
     };
 
@@ -232,7 +241,17 @@ const Bookings = () => {
                                         <div className="flex justify-end gap-2">
                                             {booking.status === 'pending' && (
                                                 <>
-                                                    <button onClick={() => handleStatusUpdate(booking._id, 'confirmed', booking.totalAmount)} className="px-6 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-800 transition-all active:scale-95 shadow-lg">Approve Reservation</button>
+                                                    <button
+                                                        onClick={() => handleStatusUpdate(booking._id, 'confirmed', booking.totalAmount)}
+                                                        disabled={actionLoading === booking._id}
+                                                        className="px-6 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-800 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2"
+                                                    >
+                                                        {actionLoading === booking._id ? (
+                                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                                        ) : (
+                                                            'Approve Reservation'
+                                                        )}
+                                                    </button>
                                                 </>
                                             )}
                                         </div>

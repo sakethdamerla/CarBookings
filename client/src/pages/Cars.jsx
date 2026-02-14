@@ -53,9 +53,11 @@ const Cars = () => {
             }
 
             if (editingId) {
+                console.log(`[EditDebug] Updating car ${editingId}...`);
                 await api.put(`/cars/${editingId}`, data, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
+                console.log('[EditDebug] Update successful');
             } else {
                 await api.post('/cars', data, {
                     headers: { 'Content-Type': 'multipart/form-data' }
@@ -66,7 +68,8 @@ const Cars = () => {
             setFormData({ name: '', model: '', registrationNumber: '', type: 'Sedan', status: 'available', pricePer24h: 0, image: null });
             setEditingId(null);
         } catch (error) {
-            console.error(error);
+            console.error('[EditDebug] Submission failed:', error.response?.data || error.message);
+            alert(error.response?.data?.message || 'Failed to save car details');
         } finally {
             setIsSubmitting(false);
         }
@@ -136,7 +139,11 @@ const Cars = () => {
                     ) : filteredCars.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                             {filteredCars.map((car) => (
-                                <div key={car._id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all active:scale-95 group flex flex-col">
+                                <div
+                                    key={car._id}
+                                    onClick={() => handleEdit(car)}
+                                    className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all active:scale-95 group flex flex-col cursor-pointer"
+                                >
                                     <div className="relative h-40 md:h-48 bg-gray-100 overflow-hidden">
                                         {car.images && car.images.length > 0 ? (
                                             <img src={car.images[0]} alt={car.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -146,10 +153,16 @@ const Cars = () => {
                                             </div>
                                         )}
                                         <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => handleEdit(car)} className="p-2 bg-white/90 backdrop-blur-sm text-blue-600 rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleEdit(car); }}
+                                                className="p-2 bg-white/90 backdrop-blur-sm text-blue-600 rounded-lg hover:bg-blue-50 transition-colors shadow-sm"
+                                            >
                                                 <Edit className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => handleDelete(car._id)} className="p-2 bg-white/90 backdrop-blur-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors shadow-sm">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(car._id); }}
+                                                className="p-2 bg-white/90 backdrop-blur-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors shadow-sm"
+                                            >
                                                 <Trash className="w-4 h-4" />
                                             </button>
                                         </div>

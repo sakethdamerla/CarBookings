@@ -145,8 +145,12 @@ const Approvals = () => {
             if (totalAmount !== null) payload.totalAmount = totalAmount;
 
             await api.put(`/bookings/${id}`, payload);
+
+            // Immediately remove from list and close modal
             setBookings(prev => prev.filter(b => b._id !== id));
             setSelectedBooking(null);
+
+            // The refreshData event from socket will handle other tabs
         } catch (error) {
             console.error(`Failed to ${status} booking:`, error);
             alert(`Failed to ${status} booking`);

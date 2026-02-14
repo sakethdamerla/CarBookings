@@ -19,26 +19,36 @@ function urlBase64ToUint8Array(base64String) {
 
 export const subscribeToPush = async () => {
     try {
-        if (!('serviceWorker' in navigator)) return;
+        if (!('serviceWorker' in navigator)) {
+            console.warn('Service Worker not supported in this browser');
+            return;
+        }
 
         const registration = await navigator.serviceWorker.ready;
+        console.log('Service Worker ready for push subscription');
 
         // Check if already subscribed
         let subscription = await registration.pushManager.getSubscription();
+        console.log('Existing subscription found:', subscription ? 'YES' : 'NO');
 
         if (!subscription) {
+            console.log('Creating new push subscription...');
             const convertedVapidKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: convertedVapidKey
             });
+            console.log('New subscription created successfully');
         }
 
         // Send to backend
-        await api.post('/push/subscribe', subscription);
-        console.log('Push subscription successful');
+        const response = await api.post('/push/subscribe', subscription);
+        console.log('Push subscription synced with backend:', response.data);
     } catch (error) {
-        console.error('Push subscription failed:', error);
+        console.error('Push subscription process failed:', error);
+        if (error.name === 'NotAllowedError') {
+            console.warn('User denied notification permission');
+        }
     }
 };
 

@@ -15,7 +15,7 @@ router.route('/').get(getCars).post(protect, admin, upload.single('image'), crea
 router
     .route('/:id')
     .get(getCar)
-    .put(protect, admin, updateCar)
+    .put(protect, admin, upload.single('image'), updateCar)
     .delete(protect, admin, deleteCar);
 
 

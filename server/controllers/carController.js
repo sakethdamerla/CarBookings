@@ -68,16 +68,21 @@ const updateCar = asyncHandler(async (req, res) => {
     const car = await Car.findById(req.params.id);
 
     if (car) {
+        if (req.file) {
+            car.images = [req.file.path];
+        } else {
+            car.images = req.body.images || car.images;
+        }
+
         car.name = req.body.name || car.name;
         car.model = req.body.model || car.model;
         car.registrationNumber = req.body.registrationNumber || car.registrationNumber;
         car.type = req.body.type || car.type;
         car.status = req.body.status || car.status;
-        car.pricePer24h = req.body.pricePer24h || car.pricePer24h;
+        car.pricePer24h = req.body.pricePer24h !== undefined ? Number(req.body.pricePer24h) : car.pricePer24h;
         car.transmission = req.body.transmission || car.transmission;
         car.fuelType = req.body.fuelType || car.fuelType;
-        car.seats = req.body.seats || car.seats;
-        car.images = req.body.images || car.images;
+        car.seats = req.body.seats !== undefined ? Number(req.body.seats) : car.seats;
         car.assignedDriver = req.body.assignedDriver || car.assignedDriver;
 
         const updatedCar = await car.save();

@@ -17,26 +17,38 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 }
 
 const sendPushNotification = async (userId, title, body, url = '/') => {
+    console.log(`[PushDebug] Attempting to send push to user: ${userId}`);
     try {
         const user = await User.findById(userId);
+        if (!user) {
+            console.warn(`[PushDebug] User ${userId} not found`);
+            return;
+        }
+
         if (user && user.pushSubscriptions && user.pushSubscriptions.length > 0) {
+            console.log(`[PushDebug] Found ${user.pushSubscriptions.length} subscriptions for user ${user.name}`);
             const payload = JSON.stringify({ title, body, url });
-            const pushPromises = user.pushSubscriptions.map(subscription =>
-                webpush.sendNotification(subscription, payload).catch(error => {
-                    console.error('Error sending push notification:', error);
-                    if (error.statusCode === 410 || error.statusCode === 404) {
-                        // Remove expired subscription
-                        return User.updateOne(
-                            { _id: userId },
-                            { $pull: { pushSubscriptions: { endpoint: subscription.endpoint } } }
-                        );
-                    }
-                })
+
+            const pushPromises = user.pushSubscriptions.map((subscription, index) =>
+                webpush.sendNotification(subscription, payload)
+                    .then(() => console.log(`[PushDebug] Push sent successfully to subscription ${index + 1}`))
+                    .catch(error => {
+                        console.error(`[PushDebug] Error on subscription ${index + 1}:`, error.message);
+                        if (error.statusCode === 410 || error.statusCode === 404) {
+                            console.log(`[PushDebug] Removing expired subscription ${index + 1}`);
+                            return User.updateOne(
+                                { _id: userId },
+                                { $pull: { pushSubscriptions: { endpoint: subscription.endpoint } } }
+                            );
+                        }
+                    })
             );
             await Promise.all(pushPromises);
+        } else {
+            console.warn(`[PushDebug] No push subscriptions found for user ${user?.name || userId}`);
         }
     } catch (error) {
-        console.error('Failed to send push notification:', error);
+        console.error('[PushDebug] Global failure in sendPushNotification:', error);
     }
 };
 
