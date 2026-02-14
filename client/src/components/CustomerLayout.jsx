@@ -2,7 +2,6 @@ import { useContext } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Calendar, User, Home, LogOut } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
-import NotificationCenter from './NotificationCenter';
 
 const CustomerLayout = () => {
     const { user, logout } = useContext(AuthContext);
@@ -20,7 +19,6 @@ const CustomerLayout = () => {
             {/* Minimal Top Actions - Notification and Logout */}
             <div className="fixed top-4 right-4 md:top-8 md:right-8 z-[60] flex items-center gap-3">
                 <div className="bg-white/80 backdrop-blur-xl border border-gray-100 p-1 rounded-2xl shadow-xl flex items-center gap-1 group transition-all duration-300">
-                    {!isActive('/customer/home') && <NotificationCenter />}
                     {user && (
                         <button
                             onClick={logout}
