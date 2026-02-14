@@ -22,6 +22,12 @@ export const AuthProvider = ({ children }) => {
                 query: { userId: user._id }
             });
 
+            // Authenticate socket with user ID
+            newSocket.on('connect', () => {
+                console.log('[SocketDebug] Connected to server, authenticating...');
+                newSocket.emit('authenticate', user._id);
+            });
+
             newSocket.on('notification', (newNotification) => {
                 console.log('Real-time notification received (Global):', newNotification);
                 // Broadcast a global event for components to refresh their data
