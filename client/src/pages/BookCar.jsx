@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { ArrowLeft, Calendar, Clock, ChevronRight, Check, Star, MapPin, UserCheck, Car } from 'lucide-react';
 import GuestLoginModal from '../components/GuestLoginModal';
+import AuthContext from '../context/AuthContext';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import { formatIST, getIST } from '../utils/dateUtils';
@@ -11,6 +12,7 @@ const BookCar = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [car, setCar] = useState(null);
+    const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [bookings, setBookings] = useState([]);
     const [showGuestModal, setShowGuestModal] = useState(false);
@@ -70,7 +72,11 @@ const BookCar = () => {
 
     const handleBooking = async () => {
         const storedGuest = localStorage.getItem('guestUser');
-        if (!storedGuest) {
+
+        // Final recipient info check
+        const activeUserDetails = user || (storedGuest ? JSON.parse(storedGuest) : null);
+
+        if (!activeUserDetails) {
             setShowGuestModal(true);
             return;
         }
@@ -96,8 +102,8 @@ const BookCar = () => {
         setIsSubmitting(true);
         try {
             const payload = {
-                customerName: guestUser?.name,
-                mobile: guestUser?.mobile,
+                customerName: activeUserDetails.name,
+                mobile: activeUserDetails.mobile,
                 bookingType: bookingType,
                 car: car._id,
                 // Treat picked date/time as IST and convert to UTC ISO
