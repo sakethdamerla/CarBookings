@@ -5,6 +5,7 @@ import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
 import Swal from 'sweetalert2';
 import moment from 'moment';
+import { formatIST, getIST } from '../utils/dateUtils';
 
 const CustomerBookings = () => {
     const { user } = useContext(AuthContext);
@@ -117,7 +118,7 @@ const CustomerBookings = () => {
                                             </div>
                                         </div>
                                         <span className={`text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-widest ${getStatusColor(booking.status)}`}>
-                                            {booking.status}
+                                            {booking.status === 'confirmed' ? 'confirmed' : (booking.status === 'approved' ? 'confirmed' : booking.status)}
                                         </span>
                                     </div>
 
@@ -129,7 +130,7 @@ const CustomerBookings = () => {
                                                     Pickup
                                                 </div>
                                                 <span className="text-xs font-black text-gray-900">
-                                                    {moment(booking.startDate).format('DD MMM, hh:mm A')}
+                                                    {formatIST(booking.startDate)}
                                                 </span>
                                             </div>
                                             <div className="flex items-center justify-between border-t border-gray-100 pt-3">
@@ -138,7 +139,7 @@ const CustomerBookings = () => {
                                                     Dropoff
                                                 </div>
                                                 <span className="text-xs font-black text-gray-900">
-                                                    {moment(booking.endDate).format('DD MMM, hh:mm A')}
+                                                    {formatIST(booking.endDate)}
                                                 </span>
                                             </div>
                                         </div>

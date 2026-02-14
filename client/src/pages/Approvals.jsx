@@ -3,11 +3,12 @@ import api from '../utils/api';
 import { Check, X, Calendar, User, Truck, Phone, AlertCircle, Loader2, Clock, DollarSign } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 import moment from 'moment';
+import { formatIST, getIST } from '../utils/dateUtils';
 
 const ApprovalModal = ({ booking, onConfirm, onCancel, loading }) => {
     const [rate, setRate] = useState('');
-    const startDate = moment(booking.startDate);
-    const endDate = moment(booking.endDate);
+    const startDate = getIST(booking.startDate);
+    const endDate = getIST(booking.endDate);
     const duration = moment.duration(endDate.diff(startDate));
 
     const days = Math.floor(duration.asDays());
@@ -49,11 +50,11 @@ const ApprovalModal = ({ booking, onConfirm, onCancel, loading }) => {
                             <div className="flex-1 text-xs">
                                 <div className="flex justify-between items-center mb-2 pb-2 border-b border-blue-100/50">
                                     <span className="font-bold text-blue-900 uppercase">Pickup</span>
-                                    <span className="font-black text-blue-600">{startDate.format('DD MMM, hh:mm A')}</span>
+                                    <span className="font-black text-blue-600">{formatIST(booking.startDate)}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="font-bold text-blue-900 uppercase">Dropoff</span>
-                                    <span className="font-black text-blue-600">{endDate.format('DD MMM, hh:mm A')}</span>
+                                    <span className="font-black text-blue-600">{formatIST(booking.endDate)}</span>
                                 </div>
                             </div>
                         </div>
@@ -196,14 +197,14 @@ const Approvals = () => {
                                                 <Calendar size={12} />
                                                 <span className="text-[8px] font-black uppercase tracking-widest">Pickup</span>
                                             </div>
-                                            <span className="font-black text-gray-900">{moment(booking.startDate).format('DD MMM, HH:mm')}</span>
+                                            <span className="font-black text-gray-900">{formatIST(booking.startDate, 'DD MMM, HH:mm')}</span>
                                         </div>
                                         <div className="p-3 border border-gray-100 rounded-2xl">
                                             <div className="flex items-center gap-2 mb-1 text-gray-400">
                                                 <Calendar size={12} />
                                                 <span className="text-[8px] font-black uppercase tracking-widest">Dropoff</span>
                                             </div>
-                                            <span className="font-black text-gray-900">{moment(booking.endDate).format('DD MMM, HH:mm')}</span>
+                                            <span className="font-black text-gray-900">{formatIST(booking.endDate, 'DD MMM, HH:mm')}</span>
                                         </div>
                                     </div>
 

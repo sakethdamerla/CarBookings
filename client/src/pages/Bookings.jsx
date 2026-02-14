@@ -5,6 +5,7 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { Plus, List, Calendar as CalendarIcon, Clock, User, Car as CarIcon, AlertCircle, Loader2, X } from 'lucide-react';
 import BookingForm from '../components/BookingForm';
+import { formatIST, getIST } from '../utils/dateUtils';
 
 const localizer = momentLocalizer(moment);
 
@@ -48,9 +49,9 @@ const Bookings = () => {
     const handleSelectSlot = (slotInfo) => {
         // Find bookings that overlap with the selected slot (day)
         const dayBookings = bookings.filter(b =>
-            moment(b.startDate).isSame(slotInfo.start, 'day') ||
-            moment(b.endDate).isSame(slotInfo.start, 'day') ||
-            moment(slotInfo.start).isBetween(b.startDate, b.endDate, 'day', '[]')
+            getIST(b.startDate).isSame(slotInfo.start, 'day') ||
+            getIST(b.endDate).isSame(slotInfo.start, 'day') ||
+            getIST(slotInfo.start).isBetween(b.startDate, b.endDate, 'day', '[]')
         );
 
         if (dayBookings.length > 0) {
@@ -162,11 +163,11 @@ const Bookings = () => {
                                         <div className="bg-white p-3 rounded-lg border border-gray-100">
                                             <p className="text-xs text-gray-500 mb-1">Schedule</p>
                                             <div className="space-y-1">
-                                                <div className="flex items-center text-gray-700"><Clock className="w-3 h-3 mr-2 text-green-500" /> {moment(booking.startDate).format('MMM D, HH:mm')}</div>
-                                                <div className="flex items-center text-gray-700"><Clock className="w-3 h-3 mr-2 text-red-500" /> {moment(booking.endDate).format('MMM D, HH:mm')}</div>
+                                                <div className="flex items-center text-gray-700"><Clock className="w-3 h-3 mr-2 text-green-500" /> {formatIST(booking.startDate, 'MMM D, HH:mm')}</div>
+                                                <div className="flex items-center text-gray-700"><Clock className="w-3 h-3 mr-2 text-red-500" /> {formatIST(booking.endDate, 'MMM D, HH:mm')}</div>
                                                 <div className="text-[10px] font-bold text-blue-500 mt-2 uppercase tracking-wide">Duration: {(() => {
-                                                    const start = moment(booking.startDate);
-                                                    const end = moment(booking.endDate);
+                                                    const start = getIST(booking.startDate);
+                                                    const end = getIST(booking.endDate);
                                                     const duration = moment.duration(end.diff(start));
                                                     const days = Math.floor(duration.asDays());
                                                     const hours = duration.hours();
@@ -252,7 +253,7 @@ const Bookings = () => {
                                 event: ({ event }) => (
                                     <div className="flex flex-col gap-0.5 p-0.5 overflow-hidden">
                                         <span className="font-semibold truncate">{event.resource.customerName}</span>
-                                        <span className="text-[8px] md:text-[10px] opacity-90 truncate">{moment(event.start).format('HH:mm')}</span>
+                                        <span className="text-[8px] md:text-[10px] opacity-90 truncate">{formatIST(event.start, 'HH:mm')}</span>
                                     </div>
                                 )
                             }}
@@ -283,11 +284,11 @@ const Bookings = () => {
                                     <div className="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                                         <div className="flex items-center gap-1.5 bg-gray-50 p-2 rounded-lg">
                                             <Clock className="w-3 h-3 text-green-500" />
-                                            {moment(booking.startDate).format('D MMM, HH:mm')}
+                                            {formatIST(booking.startDate, 'D MMM, HH:mm')}
                                         </div>
                                         <div className="flex items-center gap-1.5 bg-gray-50 p-2 rounded-lg">
                                             <Clock className="w-3 h-3 text-red-500" />
-                                            {moment(booking.endDate).format('D MMM, HH:mm')}
+                                            {formatIST(booking.endDate, 'D MMM, HH:mm')}
                                         </div>
                                     </div>
                                 </div>
@@ -327,12 +328,12 @@ const Bookings = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col text-sm text-gray-600 space-y-1">
-                                                    <div className="flex items-center"><Clock className="w-3 h-3 mr-1.5 text-green-500" /> {moment(booking.startDate).format('MMM D, HH:mm')}</div>
-                                                    <div className="flex items-center"><Clock className="w-3 h-3 mr-1.5 text-red-500" /> {moment(booking.endDate).format('MMM D, HH:mm')}</div>
+                                                    <div className="flex items-center"><Clock className="w-3 h-3 mr-1.5 text-green-500" /> {formatIST(booking.startDate, 'MMM D, HH:mm')}</div>
+                                                    <div className="flex items-center"><Clock className="w-3 h-3 mr-1.5 text-red-500" /> {formatIST(booking.endDate, 'MMM D, HH:mm')}</div>
                                                     <div className="text-[10px] font-bold text-blue-600 mt-1 uppercase">
                                                         Duration: {(() => {
-                                                            const start = moment(booking.startDate);
-                                                            const end = moment(booking.endDate);
+                                                            const start = getIST(booking.startDate);
+                                                            const end = getIST(booking.endDate);
                                                             const duration = moment.duration(end.diff(start));
                                                             const days = Math.floor(duration.asDays());
                                                             const hours = duration.hours();

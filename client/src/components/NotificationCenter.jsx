@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useContext } from 'react';
 import { Bell, CheckSquare, X, Info, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
+import { formatIST } from '../utils/dateUtils';
 
 const NotificationCenter = () => {
     const { user } = useContext(AuthContext);
@@ -160,7 +161,7 @@ const NotificationCenter = () => {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-3 w-80 md:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="fixed left-4 right-4 top-20 md:absolute md:left-auto md:right-0 md:top-full md:mt-3 md:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0">
                         <h3 className="font-black text-gray-900 uppercase tracking-tighter">Notifications</h3>
                         {unreadCount > 0 && (
@@ -187,9 +188,9 @@ const NotificationCenter = () => {
                                             <p className={`text-sm ${!n.isRead ? 'font-black text-gray-900' : 'font-medium text-gray-600'}`}>
                                                 {n.message}
                                             </p>
-                                            <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-widest">
-                                                {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </p>
+                                            <span className="text-[10px] font-bold text-gray-400">
+                                                {formatIST(n.createdAt, 'hh:mm A')}
+                                            </span>
                                         </div>
                                         {!n.isRead && (
                                             <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
