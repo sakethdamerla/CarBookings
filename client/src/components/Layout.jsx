@@ -1,12 +1,13 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useContext, useState } from 'react';
 import AuthContext from '../context/AuthContext';
-import { LayoutDashboard, Car, User, Calendar, LogOut, Menu, X, ChevronRight, Shield } from 'lucide-react';
+import { LayoutDashboard, Car, User, Calendar, LogOut, Menu, X, ChevronRight, Shield, Settings } from 'lucide-react';
+import NotificationCenter from './NotificationCenter';
 
 const Layout = () => {
     const { logout, user } = useContext(AuthContext);
     const location = useLocation();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const navItems = [];
 
@@ -28,6 +29,10 @@ const Layout = () => {
 
     if (user?.role === 'superadmin' || user?.permissions?.includes('approvals')) {
         navItems.push({ path: '/admin/approvals', label: 'Approvals', icon: Calendar });
+    }
+
+    if (user?.role === 'superadmin') {
+        navItems.push({ path: '/admin/settings', label: 'Settings', icon: Settings });
     }
 
     navItems.push({ path: '/admin/profile', label: 'Profile', icon: User });
@@ -85,12 +90,6 @@ const Layout = () => {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-gray-100">
-                    <div className={`flex items-center ${isSidebarOpen ? 'px-4' : 'justify-center'} py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 cursor-pointer transition-colors whitespace-nowrap`} onClick={logout}>
-                        <LogOut size={20} className={`${isSidebarOpen ? 'mr-3' : ''}`} />
-                        <span className={`${isSidebarOpen ? 'block' : 'hidden'} font-medium`}>Logout</span>
-                    </div>
-                </div>
             </aside>
 
             {/* Main Content */}
@@ -105,8 +104,17 @@ const Layout = () => {
                         </h2>
 
                     </div>
-                    <div className="flex items-center space-x-4">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-inner">
+                    <div className="flex items-center space-x-3">
+                        <NotificationCenter />
+                        <button
+                            onClick={logout}
+                            className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-95 group"
+                            title="Logout"
+                        >
+                            <LogOut size={20} className="group-hover:translate-x-0.5 transition-transform" />
+                            <span className="text-sm font-bold uppercase tracking-tight hidden sm:block">Exit</span>
+                        </button>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-inner ml-2">
                             {user?.name?.charAt(0) || 'A'}
                         </div>
                         <span className="text-gray-700 font-medium hidden md:block">{user?.name}</span>
@@ -116,8 +124,8 @@ const Layout = () => {
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
                     <Outlet />
                 </main>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

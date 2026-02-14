@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
-import { Car, User, MapPin, Search, Heart, Star, LogOut, Calendar } from 'lucide-react';
+import { Car, User, MapPin, Search, Heart, Star, LogOut, Calendar, Fuel } from 'lucide-react';
 import GuestLoginModal from '../components/GuestLoginModal';
 
 const CustomerHome = () => {
@@ -103,9 +103,9 @@ const CustomerHome = () => {
                                 <div
                                     key={car._id}
                                     onClick={() => navigate(`/car/${car._id}`)}
-                                    className="bg-white rounded-[2.5rem] p-5 shadow-sm border border-gray-100 hover:shadow-2xl hover:border-blue-100 transition-all cursor-pointer group relative overflow-hidden flex flex-col"
+                                    className="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 hover:shadow-2xl hover:border-blue-100 transition-all cursor-pointer group relative overflow-hidden flex flex-col"
                                 >
-                                    <div className="flex justify-between items-start mb-4 relative z-10">
+                                    <div className="flex justify-between items-start mb-2 relative z-10">
                                         <div className="bg-orange-50 text-orange-500 px-3 py-1.5 rounded-full flex items-center font-black text-[10px] md:text-xs uppercase tracking-tighter">
                                             <Star className="w-3.5 h-3.5 fill-current mr-1" />
                                             <span>4.9</span>
@@ -115,11 +115,11 @@ const CustomerHome = () => {
                                         </button>
                                     </div>
 
-                                    <div className="aspect-[16/10] mb-6 flex items-center justify-center relative z-10">
+                                    <div className="aspect-[16/9] mb-4 flex items-center justify-center relative z-10 rounded-2xl overflow-hidden">
                                         <img
                                             src={car.images && car.images.length > 0 ? car.images[0] : 'https://via.placeholder.com/300'}
                                             alt={car.name}
-                                            className="w-full h-full object-contain drop-shadow-2xl transition-all duration-700 group-hover:scale-110 group-hover:-rotate-2 p-2"
+                                            className="w-full h-full object-cover drop-shadow-2xl transition-all duration-700 group-hover:scale-110"
                                         />
                                     </div>
 
@@ -137,18 +137,18 @@ const CustomerHome = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-4 mt-6 py-4 border-y border-gray-50">
+                                        <div className="flex items-center gap-4 mt-4 py-3 border-y border-gray-50">
                                             <div className="flex items-center gap-2">
-                                                <div className="p-2 bg-gray-50 rounded-xl group-hover:bg-blue-50 transition-colors">
-                                                    <Settings2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-blue-500" />
+                                                <div className="p-1.5 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
+                                                    <Settings2 className="w-3 h-3 md:w-3.5 md:h-3.5 text-gray-400 group-hover:text-blue-500" />
                                                 </div>
-                                                <span className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-tight">{car.transmission}</span>
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">{car.transmission}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <div className="p-2 bg-gray-50 rounded-xl group-hover:bg-blue-50 transition-colors">
-                                                    <Fuel className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400 group-hover:text-blue-500" />
+                                                <div className="p-1.5 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
+                                                    <Fuel className="w-3 h-3 md:w-3.5 md:h-3.5 text-gray-400 group-hover:text-blue-500" />
                                                 </div>
-                                                <span className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-tight">{car.fuelType}</span>
+                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">{car.fuelType}</span>
                                             </div>
                                         </div>
 
@@ -163,7 +163,7 @@ const CustomerHome = () => {
                                                     navigate(`/car/${car._id}`);
                                                 }
                                             }}
-                                            className="w-full mt-6 py-4 md:py-5 bg-black text-white rounded-[1.25rem] font-black text-sm md:text-base uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 overflow-hidden relative group/btn"
+                                            className="w-full mt-4 py-3 md:py-4 bg-black text-white rounded-[1.25rem] font-black text-xs md:text-sm uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 overflow-hidden relative group/btn"
                                         >
                                             <span className="relative z-10">Book This Vehicle</span>
                                             <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>

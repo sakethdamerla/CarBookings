@@ -44,7 +44,7 @@ const PWAInstaller = () => {
 
     return (
         <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-8 md:w-96 z-[9999] animate-in fade-in slide-in-from-bottom-8 duration-500">
-            <div className="bg-white rounded-3xl shadow-2xl border border-purple-100 overflow-hidden relative">
+            <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden relative">
                 <button
                     onClick={() => setShowPopup(false)}
                     className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
@@ -54,23 +54,23 @@ const PWAInstaller = () => {
 
                 <div className="p-6">
                     <div className="flex items-center gap-4 mb-5">
-                        <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-200">
+                        <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center shadow-lg shadow-gray-200">
                             <Download className="text-white w-7 h-7" />
                         </div>
                         <div>
                             <h3 className="font-bold text-gray-900 text-lg">Install App</h3>
-                            <p className="text-xs text-gray-500 font-medium">Add to your home screen</p>
+                            <p className="text-xs text-gray-500 font-medium font-bold uppercase tracking-widest">Get the best experience</p>
                         </div>
                     </div>
 
-                    <p className="text-sm text-gray-600 leading-relaxed mb-6">
+                    <p className="text-sm text-gray-600 leading-relaxed mb-6 font-medium">
                         Install our app for a faster experience and easier access to your car bookings.
                     </p>
 
                     <div className="flex gap-3">
                         <button
                             onClick={handleInstall}
-                            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3.5 rounded-2xl font-bold text-sm shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+                            className="flex-1 bg-black text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-gray-200 hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center gap-2"
                         >
                             <Download size={18} />
                             Install Now
@@ -78,8 +78,8 @@ const PWAInstaller = () => {
                     </div>
 
                     {/* iOS Helper */}
-                    <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">
-                        <Share size={12} className="text-purple-400" />
+                    <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-center gap-2 text-[10px] text-gray-400 font-black uppercase tracking-widest text-center">
+                        <Share size={12} className="text-gray-400" />
                         <span>iPhone: Tap Share & "Add to Home Screen"</span>
                     </div>
                 </div>

@@ -1,5 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Booking = require('../models/Booking');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
 
 // @desc    Get all bookings
 // @route   GET /api/bookings
@@ -109,6 +111,21 @@ const createBooking = asyncHandler(async (req, res) => {
     });
 
     if (booking) {
+        // Create notifications for Admins and Superadmins
+        const staff = await User.find({ role: { $in: ['admin', 'superadmin'] } });
+
+        for (const member of staff) {
+            // Respect superadmin toggle if member is superadmin
+            if (member.role === 'superadmin' && !member.notificationsEnabled) continue;
+
+            await Notification.create({
+                recipient: member._id,
+                message: `New booking received from ${customerName}`,
+                type: 'booking_created',
+                bookingId: booking._id
+            });
+        }
+
         res.status(201).json(booking);
     } else {
         res.status(400);
@@ -123,11 +140,28 @@ const updateBooking = asyncHandler(async (req, res) => {
     const booking = await Booking.findById(req.params.id);
 
     if (booking) {
+        const oldStatus = booking.status;
         booking.status = req.body.status || booking.status;
         if (req.body.totalAmount !== undefined) {
             booking.totalAmount = req.body.totalAmount;
         }
         const updatedBooking = await booking.save();
+
+        // If status changed (e.g. approved/rejected), notify user
+        if (oldStatus !== updatedBooking.status) {
+            // Find user by mobile (since we don't have user ref in booking, we match by mobile)
+            const customer = await User.findOne({ mobile: booking.mobile, role: 'user' });
+            if (customer) {
+                let msg = `Your booking for ${booking.car?.name || 'vehicle'} has been ${updatedBooking.status}`;
+                await Notification.create({
+                    recipient: customer._id,
+                    message: msg,
+                    type: updatedBooking.status === 'approved' ? 'booking_approved' : 'booking_rejected',
+                    bookingId: booking._id
+                });
+            }
+        }
+
         res.json(updatedBooking);
     } else {
         res.status(404);

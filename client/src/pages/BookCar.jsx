@@ -352,7 +352,7 @@ const BookCar = () => {
                                 {bookingType === 'car_with_driver' ? <UserCheck className="w-8 h-8" /> : <Car className="w-8 h-8" />}
                             </div>
                             <div className="flex-1 text-left">
-                                <h3 className="font-black text-gray-900 text-lg md:text-xl tracking-tighter uppercase">Chauffeur Service</h3>
+                                <h3 className="font-black text-gray-900 text-lg md:text-xl tracking-tighter uppercase">Need Driver?</h3>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Professional drivers available</p>
                             </div>
                             <div className={`w-12 h-6 rounded-full transition-all relative ${bookingType === 'car_with_driver' ? 'bg-black' : 'bg-gray-200'}`}>

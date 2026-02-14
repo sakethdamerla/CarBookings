@@ -15,6 +15,7 @@ const carRoutes = require('./routes/carRoutes');
 const driverRoutes = require('./routes/driverRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const statsRoutes = require('./routes/statsRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use('/api/cars', carRoutes);
 app.use('/api/drivers', driverRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
     res.send('API is running...');

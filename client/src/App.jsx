@@ -15,6 +15,7 @@ import CustomerProfile from './pages/CustomerProfile';
 import Explore from './pages/Explore';
 import CarDetails from './pages/CarDetails';
 import BookCar from './pages/BookCar';
+import SuperAdminSettings from './pages/SuperAdminSettings';
 import CustomerLayout from './components/CustomerLayout';
 import Layout from './components/Layout';
 import PWAInstaller from './components/PWAInstaller';
@@ -56,6 +57,7 @@ function App() {
             <Route path="admins" element={<Admins />} />
             <Route path="approvals" element={<Approvals />} />
             <Route path="profile" element={<AdminProfile />} />
+            <Route path="settings" element={<SuperAdminSettings />} />
           </Route>
 
           {/* Customer Routes - Now Public with Layout */}

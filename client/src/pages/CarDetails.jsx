@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { ArrowLeft, Share2, Heart, Star, ChevronRight, Check, ShieldCheck, Zap, Fuel, Users, Settings2, Compass } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, Star, ChevronRight, Check, ShieldCheck, Zap, Fuel, Users, Settings2, Compass, Info } from 'lucide-react';
 
 const CarDetails = () => {
     const { id } = useParams();
@@ -49,21 +49,13 @@ const CarDetails = () => {
                 <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
                     {/* Image Section */}
                     <div className="lg:w-3/5 space-y-8">
-                        <div className="aspect-[16/10] bg-gray-50 rounded-[3rem] border border-gray-100 flex items-center justify-center p-8 md:p-16 relative overflow-hidden group">
+                        <div className="aspect-[16/10] bg-gray-50 rounded-[3rem] border border-gray-100 flex items-center justify-center relative overflow-hidden group">
                             <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/20 to-transparent"></div>
                             <img
                                 src={car.images?.[0] || 'https://via.placeholder.com/600'}
                                 alt={car.name}
-                                className="w-full h-full object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.15)] transition-transform duration-700 group-hover:scale-110"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
-                        </div>
-
-                        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-                            {car.images?.map((img, i) => (
-                                <div key={i} className="flex-shrink-0 w-24 h-24 md:w-32 md:h-32 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-center p-4 hover:border-black transition-colors cursor-pointer">
-                                    <img src={img} alt={car.name} className="w-full h-full object-contain" />
-                                </div>
-                            ))}
                         </div>
                     </div>
 
@@ -79,6 +71,17 @@ const CarDetails = () => {
                                     <div className="text-4xl md:text-5xl font-black tracking-tighter text-gray-900 leading-none">₹{car.pricePer24h}</div>
                                 </div>
                             </div>
+
+                            <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex gap-3 mb-8">
+                                <Info className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                                <div className="space-y-1">
+                                    <p className="text-xs font-black text-orange-700 uppercase tracking-tight">Pricing Notice</p>
+                                    <p className="text-[10px] md:text-xs text-orange-600 font-medium leading-relaxed">
+                                        The rate shown is for 24 hours. The final total amount will be calculated and provided by the admin after booking approval.
+                                    </p>
+                                </div>
+                            </div>
+
                             <h2 className="text-2xl md:text-3xl font-black tracking-tighter text-gray-900 uppercase">Specifications</h2>
                         </div>
 
@@ -97,15 +100,6 @@ const CarDetails = () => {
                                     <p className="font-black text-gray-900 uppercase tracking-tight">{spec.value}</p>
                                 </div>
                             ))}
-                        </div>
-
-                        <div className="space-y-6 pt-10 border-t border-gray-100">
-                            <h3 className="text-xl font-black tracking-tighter text-gray-900 uppercase">Features</h3>
-                            <div className="flex flex-wrap gap-3">
-                                {['Air Conditioning', 'Power Steering', 'Power Windows', 'ABS', 'Music System'].map((feat, i) => (
-                                    <span key={i} className="px-4 py-2 bg-gray-50 rounded-xl text-[10px] font-bold text-gray-500 uppercase tracking-widest border border-gray-100">{feat}</span>
-                                ))}
-                            </div>
                         </div>
 
                         {/* Booking Action - Large Screens */}

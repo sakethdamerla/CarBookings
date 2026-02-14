@@ -40,7 +40,7 @@ const Explore = () => {
                             <ArrowLeft className="w-6 h-6 text-white group-hover:-translate-x-1 transition-transform" />
                         </button>
                         <div>
-                            <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic">Browse Fleet</h1>
+                            <h1 className="text-2xl md:text-4xl font-black tracking-tighter uppercase italic">Explore</h1>
                             <p className="text-gray-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mt-1">Discover your perfect ride</p>
                         </div>
                     </div>
@@ -68,7 +68,7 @@ const Explore = () => {
                             <img
                                 src={car.images && car.images.length > 0 ? car.images[0] : 'https://via.placeholder.com/300'}
                                 alt={car.name}
-                                className="w-full h-full object-contain drop-shadow-2xl transition-all duration-700 group-hover:scale-110 group-hover:-rotate-3"
+                                className="w-full h-full object-cover drop-shadow-2xl transition-all duration-700 group-hover:scale-110"
                             />
                             <div className="absolute top-4 right-4 bg-black text-white px-4 py-2 rounded-xl text-xs md:text-sm font-black shadow-xl tracking-tight">
                                 ₹{car.pricePer24h || 0}

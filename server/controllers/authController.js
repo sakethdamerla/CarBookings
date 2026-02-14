@@ -62,6 +62,7 @@ const registerUser = asyncHandler(async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            notificationsEnabled: user.notificationsEnabled,
             token: generateToken(user._id),
         });
     } else {
@@ -212,6 +213,10 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         user.email = req.body.email || user.email;
         user.mobile = req.body.mobile || user.mobile;
 
+        if (req.body.notificationsEnabled !== undefined) {
+            user.notificationsEnabled = req.body.notificationsEnabled;
+        }
+
         if (req.body.password) {
             user.password = req.body.password;
         }
@@ -225,6 +230,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             mobile: updatedUser.mobile,
             role: updatedUser.role,
             permissions: updatedUser.permissions,
+            notificationsEnabled: updatedUser.notificationsEnabled,
             token: generateToken(updatedUser._id),
         });
     } else {

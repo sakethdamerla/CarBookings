@@ -57,7 +57,7 @@ const CustomerProfile = () => {
                             </h2>
                             <div className="inline-block bg-white/10 px-4 py-2 rounded-xl border border-white/10 backdrop-blur-sm">
                                 <p className="text-blue-300 text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">
-                                    {user ? (user.role === 'admin' ? 'Administrator' : 'Verified Member') : 'Temporary Guest'}
+                                    {user ? (user.role === 'admin' ? 'Administrator' : 'Verified Member') : 'USER'}
                                 </p>
                             </div>
                         </div>
@@ -138,7 +138,7 @@ const CustomerProfile = () => {
                                 className="w-full flex items-center justify-center gap-4 text-red-600 font-black uppercase tracking-widest text-xs py-5 hover:bg-red-50 rounded-2xl transition-all active:scale-95"
                             >
                                 <LogOut className="w-5 h-5" />
-                                {user ? 'Sign Out of Account' : 'Clear Session Data'}
+                                {user ? 'Sign Out of Account' : 'Logout'}
                             </button>
                         </div>
                     </>

@@ -253,7 +253,7 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
                                     </div>
                                     <div>
                                         <div className="font-semibold text-sm text-gray-800">Need a Driver?</div>
-                                        <div className="text-xs text-gray-500">We'll provide a professional chauffeur</div>
+                                        <div className="text-xs text-gray-500">We'll provide a professional Driver</div>
                                     </div>
                                 </div>
                             </div>
