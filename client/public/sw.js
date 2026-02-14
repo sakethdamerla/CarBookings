@@ -16,39 +16,51 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Check if it's a navigation request or index.html
-    const isNavigation = event.request.mode === 'navigate' ||
-        event.request.url.endsWith('/') ||
-        event.request.url.endsWith('index.html');
+    const { request } = event;
+    const url = new URL(request.url);
+
+    // Only handle GET requests and same-origin requests (optional but safer)
+    if (request.method !== 'GET') return;
+
+    // Check if it's a navigation request or an entry point
+    const isNavigation = request.mode === 'navigate' ||
+        url.pathname === '/' ||
+        url.pathname.endsWith('index.html');
 
     if (isNavigation) {
-        // Network First strategy for entry points
         event.respondWith(
-            fetch(event.request)
-                .then((response) => {
-                    // Update cache with the new version
-                    const responseClone = response.clone();
+            fetch(request)
+                .then((networkResponse) => {
+                    const cacheCopy = networkResponse.clone();
                     caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseClone);
+                        cache.put(request, cacheCopy);
                     });
-                    return response;
+                    return networkResponse;
                 })
-                .catch(() => caches.match(event.request))
+                .catch(() => caches.match(request) || fetch(request)) // Fallback to cache or try network again
+        );
+        return;
+    }
+
+    // Asset handling
+    const isAsset = url.pathname.includes('/assets/') ||
+        url.pathname.endsWith('.js') ||
+        url.pathname.endsWith('.css');
+
+    if (isAsset) {
+        // Network Only for assets to avoid MIME type errors
+        event.respondWith(
+            fetch(request).catch(() => {
+                // If network fails for a script/css, better to fail than serve index.html
+                return new Response('Asset not available', { status: 404 });
+            })
         );
     } else {
-        // Cache First strategy for other assets (images, etc)
-        // But NOT for .js files to avoid MIME type errors on missing chunks
-        const isScript = event.request.url.endsWith('.js');
-
-        if (isScript) {
-            // Network Only for scripts to ensure we never get stale hashes
-            event.respondWith(fetch(event.request));
-        } else {
-            event.respondWith(
-                caches.match(event.request).then((response) => {
-                    return response || fetch(event.request);
-                })
-            );
-        }
+        // Cache First for everything else (images, manifests, etc.)
+        event.respondWith(
+            caches.match(request).then((cachedResponse) => {
+                return cachedResponse || fetch(request);
+            })
+        );
     }
 });
