@@ -5,12 +5,16 @@ const Notification = require('../models/Notification');
 const { emitNotification, emitToAllStaff } = require('../utils/socketService');
 const webpush = require('web-push');
 
-// Configure web-push
-webpush.setVapidDetails(
-    'mailto:saketh@example.com',
-    process.env.VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY
-);
+// Configure web-push defensively
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+        'mailto:saketh@example.com',
+        process.env.VAPID_PUBLIC_KEY,
+        process.env.VAPID_PRIVATE_KEY
+    );
+} else {
+    console.warn('VAPID keys not found. Push notifications will be disabled.');
+}
 
 const sendPushNotification = async (userId, title, body, url = '/') => {
     try {
