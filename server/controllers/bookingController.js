@@ -152,11 +152,16 @@ const updateBooking = asyncHandler(async (req, res) => {
             // Find user by mobile (since we don't have user ref in booking, we match by mobile)
             const customer = await User.findOne({ mobile: booking.mobile, role: 'user' });
             if (customer) {
-                let msg = `Your booking for ${booking.car?.name || 'vehicle'} has been ${updatedBooking.status}`;
+                // Populate car details for better notification message if not already populated
+                if (!updatedBooking.populated('car')) {
+                    await updatedBooking.populate('car', 'name');
+                }
+
+                let msg = `Your booking for ${updatedBooking.car?.name || 'vehicle'} has been ${updatedBooking.status}`;
                 await Notification.create({
                     recipient: customer._id,
                     message: msg,
-                    type: updatedBooking.status === 'approved' ? 'booking_approved' : 'booking_rejected',
+                    type: updatedBooking.status === 'confirmed' ? 'booking_approved' : 'booking_rejected',
                     bookingId: booking._id
                 });
             }

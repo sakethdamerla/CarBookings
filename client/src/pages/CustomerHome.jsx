@@ -13,6 +13,9 @@ const CustomerHome = () => {
     const [showGuestModal, setShowGuestModal] = useState(false);
     const [guestUser, setGuestUser] = useState(JSON.parse(localStorage.getItem('guestUser')));
     const [pendingNavCarId, setPendingNavCarId] = useState(null);
+    const [notificationPermission, setNotificationPermission] = useState(
+        'Notification' in window ? Notification.permission : 'denied'
+    );
     const navigate = useNavigate();
 
     // Mock categories/brands for UI matching
@@ -32,6 +35,13 @@ const CustomerHome = () => {
         fetchCars();
     }, []);
 
+    const requestNotificationPermission = async () => {
+        if ('Notification' in window) {
+            const permission = await Notification.requestPermission();
+            setNotificationPermission(permission);
+        }
+    };
+
     const filteredCars = cars.filter(car =>
         car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         car.model.toLowerCase().includes(searchTerm.toLowerCase())
@@ -43,6 +53,26 @@ const CustomerHome = () => {
 
     return (
         <div className="pb-32">
+            {/* Notification Permission Banner */}
+            {user && notificationPermission === 'default' && (
+                <div className="bg-blue-600 text-white px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-500 sticky top-0 z-30">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white/20 rounded-xl">
+                            <Bell className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold uppercase tracking-tight">Enable Real-time Updates</p>
+                            <p className="text-[10px] text-blue-100 font-medium uppercase tracking-widest mt-0.5">Get notified instantly about your booking approvals and rejections</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={requestNotificationPermission}
+                        className="bg-white text-blue-600 px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-blue-50 transition-all active:scale-95 whitespace-nowrap"
+                    >
+                        Allow Notifications
+                    </button>
+                </div>
+            )}
             {/* Black Header Section */}
             <div className="bg-black text-white p-6 md:p-10 rounded-b-[2.5rem] md:rounded-b-[3.5rem] shadow-xl sticky top-0 z-20">
                 <div className="max-w-7xl mx-auto">

@@ -25,7 +25,7 @@ const NotificationCenter = () => {
             // Trigger browser notification for the latest unread item if it's new
             const latestUnread = data.filter(n => !n.isRead)[0];
             if (latestUnread && latestUnread._id !== lastNotifiedId.current) {
-                if (Notification.permission === 'granted') {
+                if ('Notification' in window && Notification.permission === 'granted') {
                     new Notification('New Car Booking Alert', {
                         body: latestUnread.message,
                         icon: '/download.png'
