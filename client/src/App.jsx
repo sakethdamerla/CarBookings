@@ -30,6 +30,19 @@ const PrivateRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" />;
 };
 
+// Root Redirect Component
+const RootRedirect = () => {
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) return <div>Loading...</div>;
+
+  if (user && (user.role === 'admin' || user.role === 'superadmin')) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return <Navigate to="/customer/home" replace />;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -41,7 +54,7 @@ function App() {
           <Route path="/admin/login" element={<Login />} />
           <Route path="/customer/login" element={<CustomerLogin />} />
 
-          <Route path="/" element={<Navigate to="/customer/home" replace />} />
+          <Route path="/" element={<RootRedirect />} />
 
           {/* Admin Routes - Protected */}
           <Route path="/admin" element={
@@ -75,7 +88,7 @@ function App() {
           <Route path="/approvals" element={<Navigate to="/admin/approvals" replace />} />
 
           {/* Catch-all route */}
-          <Route path="*" element={<Navigate to="/customer/home" replace />} />
+          <Route path="*" element={<RootRedirect />} />
         </Routes>
       </Router>
     </AuthProvider>
