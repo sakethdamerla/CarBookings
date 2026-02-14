@@ -36,18 +36,14 @@ function App() {
       <PWAInstaller />
       <Router>
         <Routes>
-          {/* Admin Redirects - Moved to top for priority */}
-          <Route path="/cars" element={<Navigate to="/admin/cars" replace />} />
-          <Route path="/bookings" element={<Navigate to="/admin/bookings" replace />} />
-          <Route path="/admins" element={<Navigate to="/admin/admins" replace />} />
-          <Route path="/approvals" element={<Navigate to="/admin/approvals" replace />} />
-
+          {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/admin/login" element={<Login />} />
           <Route path="/customer/login" element={<CustomerLogin />} />
 
           <Route path="/" element={<Navigate to="/customer/home" replace />} />
 
+          {/* Admin Routes - Protected */}
           <Route path="/admin" element={
             <PrivateRoute>
               <Layout />
@@ -62,10 +58,9 @@ function App() {
             <Route path="settings" element={<SuperAdminSettings />} />
           </Route>
 
-          {/* Customer Routes - Now Public with Layout */}
+          {/* Customer Routes - Public with Layout */}
           <Route element={<CustomerLayout />}>
             <Route path="/customer/home" element={<CustomerHome />} />
-
             <Route path="/car/:id" element={<CarDetails />} />
             <Route path="/customer/bookings" element={<CustomerBookings />} />
             <Route path="/customer/profile" element={<CustomerProfile />} />
@@ -73,7 +68,13 @@ function App() {
             <Route path="/book/:id" element={<BookCar />} />
           </Route>
 
-          {/* Catch-all route to avoid "No routes matched" warnings */}
+          {/* Legacy/Utility Redirects */}
+          <Route path="/cars" element={<Navigate to="/admin/cars" replace />} />
+          <Route path="/bookings" element={<Navigate to="/admin/bookings" replace />} />
+          <Route path="/admins" element={<Navigate to="/admin/admins" replace />} />
+          <Route path="/approvals" element={<Navigate to="/admin/approvals" replace />} />
+
+          {/* Catch-all route */}
           <Route path="*" element={<Navigate to="/customer/home" replace />} />
         </Routes>
       </Router>
