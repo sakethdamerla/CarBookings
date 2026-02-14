@@ -1,5 +1,5 @@
-import { createContext, useState, useEffect } from 'react';
 import api from '../utils/api';
+import { subscribeToPush } from '../utils/pushUtils';
 
 const AuthContext = createContext();
 
@@ -9,6 +9,12 @@ export const AuthProvider = ({ children }) => {
         return storedUser ? JSON.parse(storedUser) : null;
     });
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            subscribeToPush();
+        }
+    }, [user]);
 
 
     const login = async (email, password) => {

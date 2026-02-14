@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useContext } from 'react';
 import api from '../utils/api';
-import { Check, X, Calendar, User, Truck, Phone, AlertCircle, Loader2, Clock, DollarSign } from 'lucide-react';
+import { Check, X, Calendar, User, Truck, Phone, AlertCircle, Loader2, Clock, DollarSign, MapPin } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 import moment from 'moment';
 import { formatIST, getIST } from '../utils/dateUtils';
@@ -55,6 +55,19 @@ const ApprovalModal = ({ booking, onConfirm, onCancel, loading }) => {
                                 <div className="flex justify-between items-center">
                                     <span className="font-bold text-blue-900 uppercase">Dropoff</span>
                                     <span className="font-black text-blue-600">{formatIST(booking.endDate)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-4 pt-4 border-t border-blue-100/50">
+                            <div className="mt-1"><MapPin className="w-4 h-4 text-orange-600" /></div>
+                            <div className="flex-1 text-xs">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="font-bold text-orange-900 uppercase">Pickup</span>
+                                    <span className="font-black text-orange-600 truncate ml-4">{booking.pickupLocation}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="font-bold text-orange-900 uppercase">Dropoff</span>
+                                    <span className="font-black text-orange-600 truncate ml-4">{booking.dropLocation}</span>
                                 </div>
                             </div>
                         </div>
@@ -217,6 +230,14 @@ const Approvals = () => {
                                             </div>
                                         </div>
                                     )}
+
+                                    <div className="flex items-start p-3 bg-orange-50/50 rounded-2xl border border-orange-100/30">
+                                        <MapPin className="w-5 h-5 mr-4 text-orange-600 mt-1" />
+                                        <div className="flex-1 overflow-hidden">
+                                            <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Route details</p>
+                                            <p className="font-black text-orange-900 text-sm truncate">{booking.pickupLocation} → {booking.dropLocation}</p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="flex gap-3 pt-6 border-t border-gray-50 mt-auto">

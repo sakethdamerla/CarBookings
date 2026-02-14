@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import api from '../utils/api';
-import { Users, Car, User, Calendar, TrendingUp, DollarSign } from 'lucide-react';
+import { Users, Car, User, Calendar, TrendingUp, DollarSign, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { formatIST } from '../utils/dateUtils';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
     const [loading, setLoading] = useState(true);
@@ -9,15 +11,18 @@ const Dashboard = () => {
         totalDrivers: 0,
         totalBookings: 0,
         totalRevenue: 0,
-        monthlyBookings: []
+        monthlyBookings: [],
+        recentPending: []
     });
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
                 const { data } = await api.get('/stats');
-                setStats(data);
+                const { data: pendingData } = await api.get('/bookings/pending');
+                setStats({ ...data, recentPending: pendingData.slice(0, 5) });
             } catch (error) {
                 console.error(error);
             } finally {
@@ -97,6 +102,85 @@ const Dashboard = () => {
                     <div className="h-64 flex items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
                         <p className="text-gray-400 font-medium">Revenue Analysis Placeholder</p>
                     </div>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-8 border-b border-gray-50 flex justify-between items-center">
+                    <div>
+                        <h3 className="text-xl font-black text-gray-900 uppercase italic tracking-tighter">Recent Pending Requests</h3>
+                        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1">Bookings awaiting your approval</p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/admin/approvals')}
+                        className="p-4 bg-gray-50 hover:bg-black hover:text-white rounded-2xl transition-all group"
+                    >
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-gray-50/50">
+                                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Customer</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Vehicle</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Route</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Duration</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {stats.recentPending.length > 0 ? (
+                                stats.recentPending.map((booking) => (
+                                    <tr key={booking._id} className="hover:bg-gray-50/50 transition-colors group">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center font-black text-gray-400">
+                                                    {booking.customerName[0]}
+                                                </div>
+                                                <div>
+                                                    <p className="font-black text-gray-900 text-sm">{booking.customerName}</p>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{booking.mobile}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <p className="font-black text-gray-900 text-sm whitespace-nowrap">{booking.car?.name || 'Manual'}</p>
+                                            <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">{booking.bookingType.replace('_', ' ')}</p>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-2">
+                                                <MapPin className="w-3.5 h-3.5 text-orange-500" />
+                                                <div className="max-w-[150px]">
+                                                    <p className="text-[10px] font-black text-gray-900 truncate uppercase tracking-tighter">{booking.pickupLocation}</p>
+                                                    <p className="text-[10px] text-gray-400 font-bold truncate uppercase tracking-tighter">to {booking.dropLocation}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-2">
+                                                <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                                <span className="text-xs font-black text-gray-900">
+                                                    {formatIST(booking.startDate, 'DD MMM')} - {formatIST(booking.endDate, 'DD MMM')}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-[8px] font-black uppercase tracking-widest">
+                                                {booking.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="5" className="px-8 py-20 text-center">
+                                        <p className="text-gray-300 font-black uppercase tracking-widest text-xs">No pending requests</p>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

@@ -1,6 +1,38 @@
 const asyncHandler = require('express-async-handler');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
+const webpush = require('web-push');
+
+// Configure web-push
+webpush.setVapidDetails(
+    'mailto:saketh@example.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+);
+
+const sendPushNotification = async (userId, title, body, url = '/') => {
+    try {
+        const user = await User.findById(userId);
+        if (user && user.pushSubscriptions && user.pushSubscriptions.length > 0) {
+            const payload = JSON.stringify({ title, body, url });
+            const pushPromises = user.pushSubscriptions.map(subscription =>
+                webpush.sendNotification(subscription, payload).catch(error => {
+                    console.error('Error sending push notification:', error);
+                    if (error.statusCode === 410 || error.statusCode === 404) {
+                        // Remove expired subscription
+                        return User.updateOne(
+                            { _id: userId },
+                            { $pull: { pushSubscriptions: { endpoint: subscription.endpoint } } }
+                        );
+                    }
+                })
+            );
+            await Promise.all(pushPromises);
+        }
+    } catch (error) {
+        console.error('Failed to send push notification:', error);
+    }
+};
 const Notification = require('../models/Notification');
 
 // @desc    Get all bookings
@@ -108,6 +140,7 @@ const createBooking = asyncHandler(async (req, res) => {
         totalAmount,
         pickupLocation,
         dropLocation,
+        user: req.user?._id
     });
 
     if (booking) {
@@ -124,6 +157,17 @@ const createBooking = asyncHandler(async (req, res) => {
                 type: 'booking_created',
                 bookingId: booking._id
             });
+        }
+
+        // Notify Admins
+        const admins = await User.find({ role: { $in: ['admin', 'superadmin'] } });
+        for (const admin of admins) {
+            await sendPushNotification(
+                admin._id,
+                'New Booking Request',
+                `New booking from ${customerName} for ${carData?.name || 'Car'}.`,
+                '/admin/bookings'
+            );
         }
 
         res.status(201).json(booking);
@@ -149,9 +193,18 @@ const updateBooking = asyncHandler(async (req, res) => {
 
         // If status changed (e.g. approved/rejected), notify user
         if (oldStatus !== updatedBooking.status) {
-            // Find user by mobile (since we don't have user ref in booking, we match by mobile)
-            const customer = await User.findOne({ mobile: booking.mobile, role: 'user' });
-            if (customer) {
+            // Find user - prioritize the user ID ref, fallback to mobile
+            let recipientId = booking.user;
+
+            if (!recipientId) {
+                // Normalize mobile to digits only for comparison if needed, 
+                // but for now we'll match exactly after stripping whitespace
+                const normalizedMobile = booking.mobile.trim();
+                const customer = await User.findOne({ mobile: normalizedMobile, role: 'user' });
+                recipientId = customer?._id;
+            }
+
+            if (recipientId) {
                 // Populate car details for better notification message if not already populated
                 if (!updatedBooking.populated('car')) {
                     await updatedBooking.populate('car', 'name');
@@ -159,11 +212,19 @@ const updateBooking = asyncHandler(async (req, res) => {
 
                 let msg = `Your booking for ${updatedBooking.car?.name || 'vehicle'} has been ${updatedBooking.status}`;
                 await Notification.create({
-                    recipient: customer._id,
+                    recipient: recipientId,
                     message: msg,
                     type: updatedBooking.status === 'confirmed' ? 'booking_approved' : 'booking_rejected',
                     bookingId: booking._id
                 });
+
+                // Send Push Notification
+                await sendPushNotification(
+                    recipientId,
+                    `Booking ${updatedBooking.status.charAt(0).toUpperCase() + updatedBooking.status.slice(1)}`,
+                    msg,
+                    '/customer/bookings'
+                );
             }
         }
 

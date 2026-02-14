@@ -15,6 +15,55 @@ self.addEventListener('install', (event) => {
     );
 });
 
+self.addEventListener('push', (event) => {
+    let data = { title: 'New Update', body: 'You have a new notification.' };
+
+    if (event.data) {
+        try {
+            data = event.data.json();
+        } catch (e) {
+            data = { title: 'New Update', body: event.data.text() };
+        }
+    }
+
+    const options = {
+        body: data.body,
+        icon: '/download.png',
+        badge: '/download.png',
+        data: data.url || '/', // URL to open on click
+        vibrate: [100, 50, 100],
+        actions: [
+            { action: 'open', title: 'View Details' }
+        ]
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const urlToOpen = event.notification.data || '/';
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+            // Check if there is already a window open and focus it
+            for (let i = 0; i < windowClients.length; i++) {
+                const client = windowClients[i];
+                if (client.url === urlToOpen && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // If no window is open, open a new one
+            if (clients.openWindow) {
+                return clients.openWindow(urlToOpen);
+            }
+        })
+    );
+});
+
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);

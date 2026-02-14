@@ -37,6 +37,14 @@ const userSchema = mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    pushSubscriptions: [{
+        endpoint: String,
+        expirationTime: Number,
+        keys: {
+            p256dh: String,
+            auth: String
+        }
+    }]
 }, {
     timestamps: true,
 });

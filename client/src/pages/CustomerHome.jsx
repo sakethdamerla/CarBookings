@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
-import { Car, User, MapPin, Search, Heart, Star, LogOut, Calendar, Fuel } from 'lucide-react';
+import { Car, User, MapPin, Search, Heart, Star, LogOut, Calendar, Fuel, Bell, Settings2 } from 'lucide-react';
 import GuestLoginModal from '../components/GuestLoginModal';
 
 const CustomerHome = () => {
@@ -39,6 +39,10 @@ const CustomerHome = () => {
         if ('Notification' in window) {
             const permission = await Notification.requestPermission();
             setNotificationPermission(permission);
+            if (permission === 'granted') {
+                const { subscribeToPush } = await import('../utils/pushUtils');
+                subscribeToPush();
+            }
         }
     };
 
@@ -227,7 +231,6 @@ const CustomerHome = () => {
     );
 };
 
-// Add missing icon imports for the updated CustomerHome
-import { Settings2 } from 'lucide-react';
+// No extra imports needed
 
 export default CustomerHome;
