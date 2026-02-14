@@ -3,6 +3,7 @@ import api from '../utils/api';
 import { X, User, Phone, Check } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 import Swal from 'sweetalert2';
+import moment from 'moment';
 
 const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = false }) => {
     const { user } = useContext(AuthContext);
@@ -98,7 +99,12 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
             }
 
             // If car_only, use pickupLocation for dropLocation if not provided
-            const finalData = { ...formData };
+            const finalData = {
+                ...formData,
+                // Treat the picked date-time as IST and convert to UTC ISO for the server
+                startDate: moment(formData.startDate).utcOffset("+05:30", true).toISOString(),
+                endDate: moment(formData.endDate).utcOffset("+05:30", true).toISOString()
+            };
             if (finalData.bookingType === 'car_only') {
                 finalData.dropLocation = finalData.pickupLocation;
             }

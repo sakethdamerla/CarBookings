@@ -4,6 +4,8 @@ import api from '../utils/api';
 import { ArrowLeft, Calendar, Clock, ChevronRight, Check, Star, MapPin, UserCheck, Car } from 'lucide-react';
 import GuestLoginModal from '../components/GuestLoginModal';
 import Swal from 'sweetalert2';
+import moment from 'moment';
+import { formatIST, getIST } from '../utils/dateUtils';
 
 const BookCar = () => {
     const { id } = useParams();
@@ -77,8 +79,9 @@ const BookCar = () => {
                 mobile: guestUser?.mobile,
                 bookingType: bookingType,
                 car: car._id,
-                startDate: `${startDate}T${startTime}`,
-                endDate: `${endDate}T${endTime}`,
+                // Treat picked date/time as IST and convert to UTC ISO
+                startDate: moment(`${startDate}T${startTime}`).utcOffset("+05:30", true).toISOString(),
+                endDate: moment(`${endDate}T${endTime}`).utcOffset("+05:30", true).toISOString(),
                 pickupLocation: pickupLocation,
                 dropLocation: bookingType === 'car_only' ? pickupLocation : dropLocation
             };
@@ -111,9 +114,9 @@ const BookCar = () => {
     const checkAvailability = (date) => {
         const dateStr = date.toISOString().split('T')[0];
         const dayBookings = bookings.filter(b => {
-            const start = new Date(b.startDate).toISOString().split('T')[0];
-            const end = new Date(b.endDate).toISOString().split('T')[0];
-            return dateStr >= start && dateStr <= end;
+            const startStr = getIST(b.startDate).format('YYYY-MM-DD');
+            const endStr = getIST(b.endDate).format('YYYY-MM-DD');
+            return dateStr >= startStr && dateStr <= endStr;
         });
 
         if (dayBookings.length === 0) return 'available';
@@ -138,13 +141,13 @@ const BookCar = () => {
 
     const getBookedIntervals = () => {
         return bookings.filter(b => {
-            const bStart = new Date(b.startDate).toISOString().split('T')[0];
-            const bEnd = new Date(b.endDate).toISOString().split('T')[0];
+            const bStart = getIST(b.startDate).format('YYYY-MM-DD');
+            const bEnd = getIST(b.endDate).format('YYYY-MM-DD');
             // Show intervals if they involve either the start or end date selected
             return startDate === bStart || startDate === bEnd || endDate === bStart || endDate === bEnd;
         }).map(b => ({
-            start: new Date(b.startDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
-            end: new Date(b.endDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+            start: formatIST(b.startDate, 'DD/MM, hh:mm A'),
+            end: formatIST(b.endDate, 'DD/MM, hh:mm A'),
         })).sort((a, b) => a.start.localeCompare(b.start));
     };
 
