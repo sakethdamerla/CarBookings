@@ -85,9 +85,15 @@ const BookCar = () => {
             return;
         }
 
+        const startDateTime = moment(`${startDate}T${startTime}`);
+        const endDateTime = moment(`${endDate}T${endTime}`);
+
+        if (endDateTime.isSameOrBefore(startDateTime)) {
+            setError('Return time must be after pickup time');
+            return;
+        }
+
         setIsSubmitting(true);
-        setErrors({});
-        setError('');
         try {
             const payload = {
                 customerName: guestUser?.name,
@@ -237,7 +243,10 @@ const BookCar = () => {
                                         type="date"
                                         min={startDate}
                                         value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setEndDate(val);
+                                        }}
                                         className="w-full p-5 bg-white border border-gray-100 rounded-2xl font-black text-gray-800 outline-none focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm"
                                     />
                                 </div>

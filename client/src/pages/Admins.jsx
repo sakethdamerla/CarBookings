@@ -42,6 +42,8 @@ const Admins = () => {
 
     useEffect(() => {
         fetchAdmins();
+        const interval = setInterval(fetchAdmins, 10000);
+        return () => clearInterval(interval);
     }, [fetchAdmins]);
 
     const handleSubmit = async (e) => {

@@ -32,9 +32,15 @@ const CustomerBookings = () => {
 
     useEffect(() => {
         fetchBookings();
-        // Update timer every second
-        const interval = setInterval(() => setNow(new Date()), 1000);
-        return () => clearInterval(interval);
+        // Update timer every second for cancellation countdown
+        const timerInterval = setInterval(() => setNow(new Date()), 1000);
+        // Refresh bookings every 10 seconds for live status updates
+        const refreshInterval = setInterval(fetchBookings, 10000);
+
+        return () => {
+            clearInterval(timerInterval);
+            clearInterval(refreshInterval);
+        };
     }, [userMobile]);
 
     const handleCancel = async (bookingId) => {

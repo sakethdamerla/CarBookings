@@ -103,6 +103,12 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
             if (!formData.dropLocation) newErrors.dropLocation = 'Required';
         }
 
+        if (moment(formData.endDate).isSameOrBefore(moment(formData.startDate))) {
+            setError('End date/time must be after start date/time');
+            setLoading(false);
+            return;
+        }
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             setError('Please fill in required fields');

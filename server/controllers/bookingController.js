@@ -1,6 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
+const { emitNotification, emitToAllStaff } = require('../utils/socketService');
 const webpush = require('web-push');
 
 // Configure web-push

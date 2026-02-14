@@ -14,16 +14,19 @@ const Explore = () => {
     const [guestUser, setGuestUser] = useState(JSON.parse(localStorage.getItem('guestUser')));
     const [pendingNavCarId, setPendingNavCarId] = useState(null);
 
+    const fetchCars = async () => {
+        try {
+            const { data } = await api.get('/cars');
+            setCars(data.filter(c => c.status === 'available'));
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     useEffect(() => {
-        const fetchCars = async () => {
-            try {
-                const { data } = await api.get('/cars');
-                setCars(data.filter(c => c.status === 'available'));
-            } catch (error) {
-                console.error(error);
-            }
-        };
         fetchCars();
+        const interval = setInterval(fetchCars, 10000);
+        return () => clearInterval(interval);
     }, []);
 
     const filteredCars = cars.filter(car =>

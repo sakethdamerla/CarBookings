@@ -130,6 +130,8 @@ const Approvals = () => {
 
     useEffect(() => {
         fetchPendingBookings();
+        const interval = setInterval(fetchPendingBookings, 10000);
+        return () => clearInterval(interval);
     }, [fetchPendingBookings]);
 
     const handleAction = async (id, status, totalAmount = null) => {

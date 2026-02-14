@@ -30,6 +30,8 @@ const Bookings = () => {
 
     useEffect(() => {
         fetchBookings();
+        const interval = setInterval(fetchBookings, 10000);
+        return () => clearInterval(interval);
     }, [fetchBookings]);
 
     // Transform bookings for Calendar - Filter out cancelled/rejected ones
@@ -174,6 +176,25 @@ const Bookings = () => {
                                                     <MapPin className="w-3 h-3 mr-2 text-red-500 mt-0.5" />
                                                     <span className="font-semibold uppercase text-[10px] mr-1">Drop:</span>
                                                     {booking.dropLocation}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white p-3 rounded-lg border border-gray-100 col-span-2">
+                                            <p className="text-xs text-gray-500 mb-1">Schedule & Timestamps</p>
+                                            <div className="grid grid-cols-2 gap-4 text-[10px] md:text-xs">
+                                                <div className="flex items-start text-gray-700">
+                                                    <Clock className="w-3 h-3 mr-2 text-blue-500 mt-0.5" />
+                                                    <div>
+                                                        <span className="font-bold uppercase block text-gray-400">Pickup Time:</span>
+                                                        <span className="font-black">{moment(booking.startDate).format('DD MMM, YYYY - hh:mm A')}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start text-gray-700">
+                                                    <Clock className="w-3 h-3 mr-2 text-indigo-500 mt-0.5" />
+                                                    <div>
+                                                        <span className="font-bold uppercase block text-gray-400">Drop Time:</span>
+                                                        <span className="font-black">{moment(booking.endDate).format('DD MMM, YYYY - hh:mm A')}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

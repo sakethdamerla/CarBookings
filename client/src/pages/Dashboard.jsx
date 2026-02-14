@@ -19,7 +19,9 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                setLoading(true);
+                // Only show loading on initial fetch or if explicitly desired
+                // stats.totalCars === 0 checks if it's the first fetch
+                if (stats.totalCars === 0) setLoading(true);
                 const { data } = await api.get('/stats');
                 const { data: pendingData } = await api.get('/bookings/pending');
                 setStats({ ...data, recentPending: pendingData.slice(0, 5) });
@@ -30,7 +32,9 @@ const Dashboard = () => {
             }
         };
         fetchStats();
-    }, []);
+        const interval = setInterval(fetchStats, 10000);
+        return () => clearInterval(interval);
+    }, [stats.totalCars]);
 
     const cards = [
         { name: 'Total Cars', value: stats.totalCars, icon: Car, color: 'from-blue-500 to-blue-600', textColor: 'text-blue-600' },

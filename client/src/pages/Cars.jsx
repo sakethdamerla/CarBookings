@@ -28,6 +28,8 @@ const Cars = () => {
 
     useEffect(() => {
         fetchCars();
+        const interval = setInterval(fetchCars, 10000);
+        return () => clearInterval(interval);
     }, [fetchCars]);
 
     const handleSubmit = async (e) => {
