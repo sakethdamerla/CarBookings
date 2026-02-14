@@ -130,6 +130,20 @@ const createBooking = asyncHandler(async (req, res) => {
         }
     }
 
+    // Ensure User record exists for notifications (even for guests)
+    let bookingUser = req.user?._id;
+    if (!bookingUser && mobile) {
+        let existingUser = await User.findOne({ mobile });
+        if (!existingUser) {
+            existingUser = await User.create({
+                name: customerName,
+                mobile: mobile,
+                role: 'user'
+            });
+        }
+        bookingUser = existingUser._id;
+    }
+
     const booking = await Booking.create({
         customerName,
         mobile,
@@ -141,7 +155,7 @@ const createBooking = asyncHandler(async (req, res) => {
         totalAmount,
         pickupLocation,
         dropLocation,
-        user: req.user?._id
+        user: bookingUser
     });
 
     if (booking) {
@@ -208,10 +222,16 @@ const updateBooking = asyncHandler(async (req, res) => {
             let recipientId = booking.user;
 
             if (!recipientId) {
-                // Normalize mobile to digits only for comparison if needed, 
-                // but for now we'll match exactly after stripping whitespace
-                const normalizedMobile = booking.mobile.trim();
-                const customer = await User.findOne({ mobile: normalizedMobile, role: 'user' });
+                // Normalize mobile to digits only for more robust comparison
+                const normalizedMobile = booking.mobile.replace(/\D/g, '');
+                // Try to find user with exact mobile or matching characters at the end
+                const customer = await User.findOne({
+                    $or: [
+                        { mobile: booking.mobile.trim() },
+                        { mobile: { $regex: new RegExp(normalizedMobile + '$') } }
+                    ],
+                    role: 'user'
+                });
                 recipientId = customer?._id;
             }
 

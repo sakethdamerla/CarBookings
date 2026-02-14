@@ -1,14 +1,17 @@
-import { useState } from 'react';
-import { X, User, Phone, ArrowRight } from 'lucide-react';
+import { useState, useContext } from 'react';
+import { X, User, Phone, ArrowRight, Loader2 } from 'lucide-react';
+import AuthContext from '../context/AuthContext';
 
 const GuestLoginModal = ({ isOpen, onClose, onConfirm }) => {
+    const { loginWithMobile } = useContext(AuthContext);
     const [name, setName] = useState('');
     const [mobile, setMobile] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!name || !mobile) {
             setError('Please fill in all fields');
@@ -19,10 +22,16 @@ const GuestLoginModal = ({ isOpen, onClose, onConfirm }) => {
             return;
         }
 
-        const guestUser = { name, mobile };
-        localStorage.setItem('guestUser', JSON.stringify(guestUser));
-        onConfirm(guestUser);
-        onClose();
+        setLoading(true);
+        try {
+            const userData = await loginWithMobile(mobile, name);
+            onConfirm(userData);
+            onClose();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Identification failed');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -77,10 +86,15 @@ const GuestLoginModal = ({ isOpen, onClose, onConfirm }) => {
 
                     <button
                         type="submit"
-                        className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold text-base shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2"
+                        disabled={loading}
+                        className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold text-base shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
                     >
-                        Continue
-                        <ArrowRight className="w-5 h-5" />
+                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                            <>
+                                Continue
+                                <ArrowRight className="w-5 h-5" />
+                            </>
+                        )}
                     </button>
                 </form>
             </div>

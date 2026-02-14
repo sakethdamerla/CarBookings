@@ -5,7 +5,7 @@ import AuthContext from '../context/AuthContext';
 
 
 const CustomerProfile = () => {
-    const { user, logout } = useContext(AuthContext);
+    const { user, loginWithMobile, logout } = useContext(AuthContext);
     const navigate = useNavigate();
 
     // Guest States
@@ -15,15 +15,18 @@ const CustomerProfile = () => {
 
     const guestUser = JSON.parse(localStorage.getItem('guestUser'));
 
-    const handleGuestSubmit = (e) => {
+    const handleGuestSubmit = async (e) => {
         e.preventDefault();
         if (!guestName || !guestMobile) {
             setError('Please fill all fields');
             return;
         }
-        const data = { name: guestName, mobile: guestMobile };
-        localStorage.setItem('guestUser', JSON.stringify(data));
-        window.location.reload(); // Refresh to show profile
+        try {
+            await loginWithMobile(guestMobile, guestName);
+            // AuthContext updates user state, which triggers re-render
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to identify');
+        }
     };
 
     const handleLogout = () => {
