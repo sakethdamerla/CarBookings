@@ -4,7 +4,7 @@ import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
 import { formatIST } from '../utils/dateUtils';
 
-const NotificationCenter = () => {
+const NotificationCenter = ({ trigger }) => {
     const { user } = useContext(AuthContext);
     const [notifications, setNotifications] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -116,11 +116,11 @@ const NotificationCenter = () => {
 
     const getIcon = (type) => {
         switch (type) {
-            case 'booking_created': return <Clock className="text-blue-500" size={18} />;
-            case 'booking_approved': return <CheckCircle2 className="text-green-500" size={18} />;
-            case 'booking_rejected': return <XCircle className="text-red-500" size={18} />;
-            case 'booking_cancelled': return <X className="text-gray-500" size={18} />;
-            default: return <Info className="text-blue-500" size={18} />;
+            case 'booking_created': return <Clock className="text-zinc-400" size={18} />;
+            case 'booking_approved': return <CheckCircle2 className="text-black" size={18} />;
+            case 'booking_rejected': return <XCircle className="text-zinc-600" size={18} />;
+            case 'booking_cancelled': return <X className="text-zinc-400" size={18} />;
+            default: return <Info className="text-zinc-400" size={18} />;
         }
     };
 
@@ -143,57 +143,66 @@ const NotificationCenter = () => {
             {showPermissionButton && (
                 <button
                     onClick={requestPermissionManually}
-                    className="absolute -top-12 right-0 bg-blue-600 text-white text-xs px-3 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-all z-50 whitespace-nowrap"
+                    className="absolute -top-12 right-0 bg-black text-white text-[10px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl shadow-2xl hover:bg-gray-900 transition-all z-50 whitespace-nowrap border border-white/10"
                 >
                     🔔 Enable Notifications
                 </button>
             )}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-xl transition-all active:scale-95"
-            >
-                <Bell size={24} />
-                {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white animate-pulse">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                )}
-            </button>
+            {trigger ? (
+                <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">
+                    {trigger(unreadCount)}
+                </div>
+            ) : (
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="relative p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-xl transition-all active:scale-95"
+                >
+                    <Bell size={24} />
+                    {unreadCount > 0 && (
+                        <span className="absolute top-1 right-1 w-5 h-5 bg-black text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-white animate-pulse shadow-lg">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                    )}
+                </button>
+            )}
 
             {isOpen && (
-                <div className="fixed left-4 right-4 top-20 md:absolute md:left-auto md:right-0 md:top-full md:mt-3 md:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0">
-                        <h3 className="font-black text-gray-900 uppercase tracking-tighter">Notifications</h3>
+                <div className="fixed inset-x-4 top-[80px] md:absolute md:left-auto md:right-0 md:top-full md:mt-4 md:w-[420px] bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-6 duration-500 scale-100 origin-top-right">
+                    <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
+                        <h3 className="font-black text-gray-900 uppercase tracking-tighter text-lg">Notifications</h3>
                         {unreadCount > 0 && (
                             <button
                                 onClick={markAllRead}
-                                className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
+                                className="text-[10px] font-black text-gray-900 underline underline-offset-4 uppercase tracking-widest hover:text-black transition-colors"
                             >
                                 Mark all as read
                             </button>
                         )}
                     </div>
 
-                    <div className="max-h-[400px] overflow-y-auto no-scrollbar">
+                    <div className="max-h-[400px] overflow-y-auto scrollbar-hide">
                         {notifications.length > 0 ? (
                             <div className="divide-y divide-gray-50">
                                 {notifications.map((n) => (
                                     <div
                                         key={n._id}
                                         onClick={() => markAsRead(n._id)}
-                                        className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer group flex gap-4 ${!n.isRead ? 'bg-blue-50/30' : ''}`}
+                                        className={`p-5 hover:bg-gray-50 transition-all cursor-pointer group flex gap-5 active:bg-gray-100 ${!n.isRead ? 'bg-zinc-50/50' : ''}`}
                                     >
-                                        <div className="mt-1">{getIcon(n.type)}</div>
+                                        <div className="mt-1 transition-transform group-hover:scale-110">{getIcon(n.type)}</div>
                                         <div className="flex-1">
-                                            <p className={`text-sm ${!n.isRead ? 'font-black text-gray-900' : 'font-medium text-gray-600'}`}>
+                                            <p className={`text-sm leading-relaxed ${!n.isRead ? 'font-black text-gray-900' : 'font-medium text-gray-600'}`}>
                                                 {n.message}
                                             </p>
-                                            <span className="text-[10px] font-bold text-gray-400">
-                                                {formatIST(n.createdAt, 'hh:mm A')}
-                                            </span>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <Clock size={10} className="text-gray-300" />
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                                    {formatIST(n.createdAt, 'hh:mm A')}
+                                                </span>
+                                            </div>
                                         </div>
                                         {!n.isRead && (
-                                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                            <div className="w-2.5 h-2.5 bg-black rounded-full mt-2 ring-4 ring-black/5 animate-pulse"></div>
                                         )}
                                     </div>
                                 ))}

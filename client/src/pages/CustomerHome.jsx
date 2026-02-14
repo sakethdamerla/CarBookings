@@ -4,6 +4,7 @@ import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
 import { Car, User, MapPin, Search, Heart, Star, LogOut, Calendar, Fuel, Bell, Settings2 } from 'lucide-react';
 import GuestLoginModal from '../components/GuestLoginModal';
+import NotificationCenter from '../components/NotificationCenter';
 
 const CustomerHome = () => {
     const { user, logout } = useContext(AuthContext); // Get user
@@ -59,19 +60,19 @@ const CustomerHome = () => {
         <div className="pb-32">
             {/* Notification Permission Banner */}
             {user && notificationPermission === 'default' && (
-                <div className="bg-blue-600 text-white px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-500 sticky top-0 z-30">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white/20 rounded-xl">
-                            <Bell className="w-5 h-5 text-white" />
+                <div className="bg-zinc-900 text-white px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top duration-700 sticky top-0 z-30 border-b border-white/5 backdrop-blur-xl">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-white/10 rounded-2xl border border-white/10">
+                            <Bell className="w-5 h-5 text-white animate-bounce" />
                         </div>
                         <div>
-                            <p className="text-sm font-bold uppercase tracking-tight">Enable Real-time Updates</p>
-                            <p className="text-[10px] text-blue-100 font-medium uppercase tracking-widest mt-0.5">Get notified instantly about your booking approvals and rejections</p>
+                            <p className="text-sm font-black uppercase tracking-[0.1em]">Enable Premium Updates</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.05em] mt-1">Receive instance alerts for booking approvals & status changes</p>
                         </div>
                     </div>
                     <button
                         onClick={requestNotificationPermission}
-                        className="bg-white text-blue-600 px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-blue-50 transition-all active:scale-95 whitespace-nowrap"
+                        className="bg-white text-black px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl hover:bg-gray-100 transition-all active:scale-95 whitespace-nowrap"
                     >
                         Allow Notifications
                     </button>
@@ -87,16 +88,30 @@ const CustomerHome = () => {
                             </div>
                             <h1 className="text-2xl md:text-3xl font-black tracking-tight">{user?.name || guestUser?.name || 'Guest'}</h1>
                         </div>
-                        <button
-                            onClick={() => {
-                                if (user) logout();
-                                localStorage.removeItem('guestUser');
-                                setGuestUser(null);
-                            }}
-                            className="bg-white/10 hover:bg-white/20 p-3 md:p-4 rounded-2xl border border-white/10 backdrop-blur-md transition-all group active:scale-95"
-                        >
-                            <LogOut className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:rotate-12 transition-transform" />
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <NotificationCenter
+                                trigger={(unreadCount) => (
+                                    <div className="bg-white/10 hover:bg-white/20 p-3 md:p-4 rounded-2xl border border-white/10 backdrop-blur-md transition-all group active:scale-95 relative">
+                                        <Bell className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:rotate-12 transition-transform" />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute top-2 right-2 w-5 h-5 bg-white text-black text-[10px] font-black flex items-center justify-center rounded-full border-2 border-black animate-pulse shadow-lg">
+                                                {unreadCount > 9 ? '9+' : unreadCount}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            />
+                            <button
+                                onClick={() => {
+                                    if (user) logout();
+                                    localStorage.removeItem('guestUser');
+                                    setGuestUser(null);
+                                }}
+                                className="bg-white/10 hover:bg-white/20 p-3 md:p-4 rounded-2xl border border-white/10 backdrop-blur-md transition-all group active:scale-95"
+                            >
+                                <LogOut className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:rotate-12 transition-transform" />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Search Bar */}

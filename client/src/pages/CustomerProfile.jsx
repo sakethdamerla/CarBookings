@@ -156,7 +156,7 @@ const CustomerProfile = () => {
                                         className="flex items-center justify-center gap-3 px-6 py-4 bg-gray-100 text-gray-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95 border border-gray-200"
                                     >
                                         <Bell className="w-4 h-4" />
-                                        Test Local Alert
+                                        Test Notifications
                                     </button>
 
                                     <button
@@ -172,7 +172,7 @@ const CustomerProfile = () => {
                                         className="flex items-center justify-center gap-3 px-6 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all active:scale-95 shadow-xl shadow-blue-100"
                                     >
                                         <Bell className="w-4 h-4" />
-                                        Sync Background Push
+                                        Make sure Notifications on
                                     </button>
                                 </div>
                             </div>
