@@ -8,7 +8,7 @@ import Bookings from './pages/Bookings';
 import Admins from './pages/Admins';
 import Approvals from './pages/Approvals';
 import AdminProfile from './pages/AdminProfile';
-// import CustomerLogin from './pages/CustomerLogin';
+import CustomerLogin from './pages/CustomerLogin';
 import CustomerHome from './pages/CustomerHome';
 import CustomerBookings from './pages/CustomerBookings';
 import CustomerProfile from './pages/CustomerProfile';
@@ -43,6 +43,8 @@ function App() {
           <Route path="/approvals" element={<Navigate to="/admin/approvals" replace />} />
 
           <Route path="/login" element={<Login />} />
+          <Route path="/admin/login" element={<Login />} />
+          <Route path="/customer/login" element={<CustomerLogin />} />
 
           <Route path="/" element={<Navigate to="/customer/home" replace />} />
 
@@ -62,8 +64,8 @@ function App() {
 
           {/* Customer Routes - Now Public with Layout */}
           <Route element={<CustomerLayout />}>
-            <Route path="/customer/login" element={<Navigate to="/login" replace />} />
             <Route path="/customer/home" element={<CustomerHome />} />
+
             <Route path="/car/:id" element={<CarDetails />} />
             <Route path="/customer/bookings" element={<CustomerBookings />} />
             <Route path="/customer/profile" element={<CustomerProfile />} />

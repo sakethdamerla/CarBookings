@@ -4,17 +4,12 @@ import api from '../utils/api';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(() => {
+        const storedUser = localStorage.getItem('user');
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        if (storedUser) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setUser(storedUser);
-        }
-        setLoading(false);
-    }, []);
 
     const login = async (email, password) => {
         const { data } = await api.post('/auth/login', { email, password });
