@@ -21,6 +21,7 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
     });
 
     const [cars, setCars] = useState([]);
+    const [currentTime, setCurrentTime] = useState(moment().format('YYYY-MM-DDTHH:mm'));
     const [error, setError] = useState('');
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -209,10 +210,11 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
                                 <input
                                     type="datetime-local"
                                     required
+                                    min={currentTime}
                                     className={`w-full p-2.5 bg-gray-50 border rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all ${errors.startDate ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-100'}`}
                                     value={formData.startDate}
                                     onChange={e => {
-                                        setFormData({ ...formData, startDate: e.target.value });
+                                        setFormData({ ...formData, startDate: e.target.value, endDate: e.target.value > formData.endDate ? e.target.value : formData.endDate });
                                         if (errors.startDate) setErrors({ ...errors, startDate: null });
                                     }}
                                 />
@@ -223,6 +225,7 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
                                 <input
                                     type="datetime-local"
                                     required
+                                    min={formData.startDate || currentTime}
                                     className={`w-full p-2.5 bg-gray-50 border rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all ${errors.endDate ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-100'}`}
                                     value={formData.endDate}
                                     onChange={e => {

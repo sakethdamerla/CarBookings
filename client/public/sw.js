@@ -30,15 +30,17 @@ self.addEventListener('push', (event) => {
         body: data.body,
         icon: '/download.png',
         badge: '/download.png',
-        data: data.url || '/', // URL to open on click
-        vibrate: [100, 50, 100],
+        data: data.url || '/customer/home', // URL to open on click
+        vibrate: [200, 100, 200],
+        tag: 'booking-notification', // Unique tag to group notifications
+        renotify: true,
         actions: [
-            { action: 'open', title: 'View Details' }
+            { action: 'open', title: 'Open App' }
         ]
     };
 
     event.waitUntil(
-        self.registration.showNotification(data.title, options)
+        self.registration.showNotification(data.title || 'Car Booking Update', options)
     );
 });
 

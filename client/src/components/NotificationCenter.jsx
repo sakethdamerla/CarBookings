@@ -3,6 +3,8 @@ import { Bell, CheckSquare, X, Info, CheckCircle2, XCircle, Clock } from 'lucide
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
 import { formatIST } from '../utils/dateUtils';
+import { io } from 'socket.io-client';
+import { apiUrl } from '../utils/api';
 
 const NotificationCenter = ({ trigger }) => {
     const { user } = useContext(AuthContext);
@@ -49,39 +51,45 @@ const NotificationCenter = ({ trigger }) => {
     };
 
     useEffect(() => {
-        // Request notification permission when user is authenticated
-        if (user && 'Notification' in window) {
-            console.log('=== NOTIFICATION DEBUG ===');
-            console.log('User authenticated:', !!user);
-            console.log('Notification API available:', 'Notification' in window);
-            console.log('Current permission:', Notification.permission);
-            console.log('Browser:', navigator.userAgent);
+        // ... (existing permission logs)
+        let socket;
 
-            if (Notification.permission === 'default') {
-                console.log('Requesting notification permission...');
-                // Request immediately
-                Notification.requestPermission().then(permission => {
-                    console.log('Permission response:', permission);
-                    if (permission === 'default') {
-                        setShowPermissionButton(true);
-                    }
-                }).catch(err => {
-                    console.error('Permission request error:', err);
-                    setShowPermissionButton(true);
-                });
-            } else if (Notification.permission === 'denied') {
-                console.log('Notifications are blocked. User needs to enable in browser settings.');
-                setShowPermissionButton(true);
-            } else {
-                console.log('Notifications already granted!');
-            }
-        } else {
-            console.log('Notification conditions not met:', { user: !!user, hasNotificationAPI: 'Notification' in window });
+        if (user) {
+            const socketUrl = apiUrl.replace('/api', '');
+            socket = io(socketUrl);
+
+            socket.on('connect', () => {
+                socket.emit('authenticate', user._id);
+            });
+
+            socket.on('notification', (newNotification) => {
+                console.log('Real-time notification received:', newNotification);
+                setNotifications(prev => [newNotification, ...prev]);
+                setUnreadCount(prev => prev + 1);
+
+                // Browser alert
+                if ('Notification' in window && Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification('Booking Update', {
+                            body: newNotification.message,
+                            icon: '/download.png',
+                            badge: '/download.png',
+                            vibrate: [200, 100, 200],
+                            tag: 'booking-update',
+                            renotify: true
+                        });
+                    });
+                }
+            });
         }
 
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 15000);
-        return () => clearInterval(interval);
+        const interval = setInterval(fetchNotifications, 30000); // Slower poll as backup
+
+        return () => {
+            clearInterval(interval);
+            if (socket) socket.disconnect();
+        };
     }, [user]);
 
     useEffect(() => {

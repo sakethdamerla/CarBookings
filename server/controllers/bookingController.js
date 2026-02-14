@@ -33,7 +33,6 @@ const sendPushNotification = async (userId, title, body, url = '/') => {
         console.error('Failed to send push notification:', error);
     }
 };
-const Notification = require('../models/Notification');
 
 // @desc    Get all bookings
 // @route   GET /api/bookings
@@ -147,17 +146,27 @@ const createBooking = asyncHandler(async (req, res) => {
         // Create notifications for Admins and Superadmins
         const staff = await User.find({ role: { $in: ['admin', 'superadmin'] } });
 
+        const msg = `New booking received from ${customerName}`;
         for (const member of staff) {
             // Respect superadmin toggle if member is superadmin
             if (member.role === 'superadmin' && !member.notificationsEnabled) continue;
 
-            await Notification.create({
+            const notification = await Notification.create({
                 recipient: member._id,
-                message: `New booking received from ${customerName}`,
+                message: msg,
                 type: 'booking_created',
                 bookingId: booking._id
             });
+
+            // Emit to admin via socket
+            emitNotification(member._id, notification);
         }
+
+        // Global staff/admin event for live dashboard updates
+        emitToAllStaff({
+            type: 'booking_created',
+            booking: await booking.populate('car', 'name model registrationNumber')
+        });
 
         // Notify Admins
         const admins = await User.find({ role: { $in: ['admin', 'superadmin'] } });
@@ -210,21 +219,47 @@ const updateBooking = asyncHandler(async (req, res) => {
                     await updatedBooking.populate('car', 'name');
                 }
 
-                let msg = `Your booking for ${updatedBooking.car?.name || 'vehicle'} has been ${updatedBooking.status}`;
-                await Notification.create({
-                    recipient: recipientId,
-                    message: msg,
-                    type: updatedBooking.status === 'confirmed' ? 'booking_approved' : 'booking_rejected',
-                    bookingId: booking._id
-                });
+                let notificationType;
+                let notificationTitle;
 
-                // Send Push Notification
-                await sendPushNotification(
-                    recipientId,
-                    `Booking ${updatedBooking.status.charAt(0).toUpperCase() + updatedBooking.status.slice(1)}`,
-                    msg,
-                    '/customer/bookings'
-                );
+                switch (updatedBooking.status) {
+                    case 'confirmed':
+                        notificationType = 'booking_approved';
+                        notificationTitle = 'Booking Approved';
+                        break;
+                    case 'rejected':
+                        notificationType = 'booking_rejected';
+                        notificationTitle = 'Booking Rejected';
+                        break;
+                    case 'cancelled':
+                        notificationType = 'booking_cancelled';
+                        notificationTitle = 'Booking Cancelled';
+                        break;
+                    default:
+                        // No notification for other statuses (e.g., 'completed', 'pending')
+                        break;
+                }
+
+                if (notificationType) {
+                    let msg = `Your booking for ${updatedBooking.car?.name || 'vehicle'} has been ${updatedBooking.status}`;
+                    const notification = await Notification.create({
+                        recipient: recipientId,
+                        message: msg,
+                        type: notificationType,
+                        bookingId: booking._id
+                    });
+
+                    // Emit to client via socket
+                    emitNotification(recipientId, notification);
+
+                    // Send Push Notification
+                    await sendPushNotification(
+                        recipientId,
+                        notificationTitle,
+                        msg,
+                        '/customer/bookings'
+                    );
+                }
             }
         }
 

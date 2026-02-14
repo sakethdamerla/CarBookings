@@ -3,7 +3,7 @@ import api from '../utils/api';
 import moment from 'moment';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { Plus, List, Calendar as CalendarIcon, Clock, User, Car as CarIcon, AlertCircle, Loader2, X } from 'lucide-react';
+import { Plus, List, Calendar as CalendarIcon, Clock, User, Car as CarIcon, AlertCircle, Loader2, X, MapPin } from 'lucide-react';
 import BookingForm from '../components/BookingForm';
 import { formatIST, getIST } from '../utils/dateUtils';
 
@@ -163,18 +163,18 @@ const Bookings = () => {
                                             </div>
                                         </div>
                                         <div className="bg-white p-3 rounded-lg border border-gray-100">
-                                            <p className="text-xs text-gray-500 mb-1">Schedule</p>
-                                            <div className="space-y-1">
-                                                <div className="flex items-center text-gray-700"><Clock className="w-3 h-3 mr-2 text-green-500" /> {formatIST(booking.startDate, 'MMM D, HH:mm')}</div>
-                                                <div className="flex items-center text-gray-700"><Clock className="w-3 h-3 mr-2 text-red-500" /> {formatIST(booking.endDate, 'MMM D, HH:mm')}</div>
-                                                <div className="text-[10px] font-bold text-blue-500 mt-2 uppercase tracking-wide">Duration: {(() => {
-                                                    const start = getIST(booking.startDate);
-                                                    const end = getIST(booking.endDate);
-                                                    const duration = moment.duration(end.diff(start));
-                                                    const days = Math.floor(duration.asDays());
-                                                    const hours = duration.hours();
-                                                    return `${days > 0 ? `${days}d ` : ''}${hours}h`;
-                                                })()}</div>
+                                            <p className="text-xs text-gray-500 mb-1">Handling Location</p>
+                                            <div className="space-y-1 text-xs">
+                                                <div className="flex items-start text-gray-700">
+                                                    <MapPin className="w-3 h-3 mr-2 text-orange-500 mt-0.5" />
+                                                    <span className="font-semibold uppercase text-[10px] mr-1">Pickup:</span>
+                                                    {booking.pickupLocation}
+                                                </div>
+                                                <div className="flex items-start text-gray-700">
+                                                    <MapPin className="w-3 h-3 mr-2 text-red-500 mt-0.5" />
+                                                    <span className="font-semibold uppercase text-[10px] mr-1">Drop:</span>
+                                                    {booking.dropLocation}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -203,15 +203,14 @@ const Bookings = () => {
                                             </div>
                                         </div>
 
+                                        <div className="flex justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                            {booking.status === 'confirmed' ? 'Reservation Finalized' : 'Awaiting Approval'}
+                                        </div>
                                         <div className="flex justify-end gap-2">
                                             {booking.status === 'pending' && (
                                                 <>
-                                                    <button onClick={() => handleStatusUpdate(booking._id, 'confirmed', booking.totalAmount)} className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors">Confirm</button>
-                                                    <button onClick={() => handleStatusUpdate(booking._id, 'cancelled')} className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors">Reject</button>
+                                                    <button onClick={() => handleStatusUpdate(booking._id, 'confirmed', booking.totalAmount)} className="px-6 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-800 transition-all active:scale-95 shadow-lg">Approve Reservation</button>
                                                 </>
-                                            )}
-                                            {booking.status === 'confirmed' && (
-                                                <button onClick={() => handleStatusUpdate(booking._id, 'cancelled')} className="px-3 py-1.5 border border-red-200 text-red-600 text-xs font-medium rounded-lg hover:bg-red-50 transition-colors">Cancel Booking</button>
                                             )}
                                         </div>
                                     </div>

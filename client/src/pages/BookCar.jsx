@@ -21,6 +21,8 @@ const BookCar = () => {
     const [startTime, setStartTime] = useState('09:00');
     const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
     const [endTime, setEndTime] = useState('18:00');
+    const [minDate] = useState(new Date().toISOString().split('T')[0]);
+    const [minTime, setMinTime] = useState('00:00');
     const [bookingType, setBookingType] = useState('car_only');
 
     const [pickupLocation, setPickupLocation] = useState('');
@@ -28,6 +30,22 @@ const BookCar = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [errors, setErrors] = useState({});
+
+    // Update minTime if startDate is today
+    useEffect(() => {
+        if (startDate === minDate) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const currentTimeStr = `${hours}:${minutes}`;
+            setMinTime(currentTimeStr);
+            if (startTime < currentTimeStr) {
+                setStartTime(currentTimeStr);
+            }
+        } else {
+            setMinTime('00:00');
+        }
+    }, [startDate, minDate]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -203,11 +221,12 @@ const BookCar = () => {
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Start Date</label>
                                     <input
                                         type="date"
-                                        min={new Date().toISOString().split('T')[0]}
+                                        min={minDate}
                                         value={startDate}
                                         onChange={(e) => {
-                                            setStartDate(e.target.value);
-                                            if (e.target.value > endDate) setEndDate(e.target.value);
+                                            const val = e.target.value;
+                                            setStartDate(val);
+                                            if (val > endDate) setEndDate(val);
                                         }}
                                         className="w-full p-5 bg-white border border-gray-100 rounded-2xl font-black text-gray-800 outline-none focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm"
                                     />
@@ -229,6 +248,7 @@ const BookCar = () => {
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pick Time</label>
                                     <input
                                         type="time"
+                                        min={startDate === minDate ? minTime : undefined}
                                         value={startTime}
                                         onChange={(e) => setStartTime(e.target.value)}
                                         className="w-full p-5 bg-white border border-gray-100 rounded-2xl font-black text-gray-800 outline-none focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm"
