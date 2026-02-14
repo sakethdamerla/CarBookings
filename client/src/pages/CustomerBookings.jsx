@@ -34,12 +34,13 @@ const CustomerBookings = () => {
         fetchBookings();
         // Update timer every second for cancellation countdown
         const timerInterval = setInterval(() => setNow(new Date()), 1000);
-        // Refresh bookings every 10 seconds for live status updates
-        const refreshInterval = setInterval(fetchBookings, 10000);
+
+        // Listen for real-time refresh events
+        window.addEventListener('refreshData', fetchBookings);
 
         return () => {
             clearInterval(timerInterval);
-            clearInterval(refreshInterval);
+            window.removeEventListener('refreshData', fetchBookings);
         };
     }, [userMobile]);
 

@@ -19,8 +19,6 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                // Only show loading on initial fetch or if explicitly desired
-                // stats.totalCars === 0 checks if it's the first fetch
                 if (stats.totalCars === 0) setLoading(true);
                 const { data } = await api.get('/stats');
                 const { data: pendingData } = await api.get('/bookings/pending');
@@ -31,9 +29,12 @@ const Dashboard = () => {
                 setLoading(false);
             }
         };
+
         fetchStats();
-        const interval = setInterval(fetchStats, 10000);
-        return () => clearInterval(interval);
+
+        // Listen for real-time refresh events
+        window.addEventListener('refreshData', fetchStats);
+        return () => window.removeEventListener('refreshData', fetchStats);
     }, [stats.totalCars]);
 
     const cards = [

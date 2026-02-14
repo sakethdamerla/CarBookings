@@ -51,46 +51,22 @@ const NotificationCenter = ({ trigger }) => {
     };
 
     useEffect(() => {
-        // ... (existing permission logs)
-        let socket;
+        const handleNewNotification = (e) => {
+            const newNotification = e.detail;
+            setNotifications(prev => [newNotification, ...prev]);
+            setUnreadCount(prev => prev + 1);
+        };
 
-        if (user) {
-            const socketUrl = apiUrl.replace('/api', '');
-            socket = io(socketUrl);
-
-            socket.on('connect', () => {
-                socket.emit('authenticate', user._id);
-            });
-
-            socket.on('notification', (newNotification) => {
-                console.log('Real-time notification received:', newNotification);
-                setNotifications(prev => [newNotification, ...prev]);
-                setUnreadCount(prev => prev + 1);
-
-                // Browser alert
-                if ('Notification' in window && Notification.permission === 'granted' && 'serviceWorker' in navigator) {
-                    navigator.serviceWorker.ready.then(registration => {
-                        registration.showNotification('Booking Update', {
-                            body: newNotification.message,
-                            icon: '/download.png',
-                            badge: '/download.png',
-                            vibrate: [200, 100, 200],
-                            tag: 'booking-update',
-                            renotify: true
-                        });
-                    });
-                }
-            });
-        }
-
+        window.addEventListener('notificationReceived', handleNewNotification);
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 30000); // Slower poll as backup
+
+        const interval = setInterval(fetchNotifications, 60000); // Background sync
 
         return () => {
+            window.removeEventListener('notificationReceived', handleNewNotification);
             clearInterval(interval);
-            if (socket) socket.disconnect();
         };
-    }, [user]);
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {

@@ -30,8 +30,10 @@ const Bookings = () => {
 
     useEffect(() => {
         fetchBookings();
-        const interval = setInterval(fetchBookings, 10000);
-        return () => clearInterval(interval);
+
+        // Listen for real-time refresh events
+        window.addEventListener('refreshData', fetchBookings);
+        return () => window.removeEventListener('refreshData', fetchBookings);
     }, [fetchBookings]);
 
     // Transform bookings for Calendar - Filter out cancelled/rejected ones

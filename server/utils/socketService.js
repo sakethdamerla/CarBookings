@@ -38,12 +38,19 @@ const initSocket = (server) => {
 };
 
 const emitNotification = (userId, notification) => {
-    if (!io) return;
+    if (!io) {
+        console.warn('[SocketDebug] IO not initialized');
+        return;
+    }
 
-    if (userSockets.has(userId)) {
-        userSockets.get(userId).forEach(socketId => {
+    if (userSockets.has(userId.toString())) {
+        const sockets = userSockets.get(userId.toString());
+        console.log(`[SocketDebug] Emitting notification to user ${userId} (${sockets.size} sockets)`);
+        sockets.forEach(socketId => {
             io.to(socketId).emit('notification', notification);
         });
+    } else {
+        console.warn(`[SocketDebug] No active sockets found for user ${userId}. Available users: ${Array.from(userSockets.keys()).join(', ')}`);
     }
 };
 

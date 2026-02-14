@@ -169,7 +169,15 @@ const loginWithMobile = asyncHandler(async (req, res) => {
             throw new Error('Please provide a mobile number');
         }
 
-        let user = await User.findOne({ mobile });
+        // Standardize mobile to last 10 digits for consistent lookups
+        const normalizedMobile = mobile.replace(/\D/g, '').slice(-10);
+
+        let user = await User.findOne({
+            $or: [
+                { mobile: mobile.trim() },
+                { mobile: { $regex: new RegExp(normalizedMobile + '$') } }
+            ]
+        });
 
         if (!user) {
             // Create new user if not exists
@@ -179,12 +187,13 @@ const loginWithMobile = asyncHandler(async (req, res) => {
             }
             user = await User.create({
                 name,
-                mobile,
+                mobile: normalizedMobile, // Store standardized version
                 role: 'user',
             });
-        } else if (name) {
-            // Optional: Update name if provided and user exists (basic profile update on login)
-            user.name = name;
+        } else {
+            // Update to standardized mobile if needed and set name
+            if (name) user.name = name;
+            user.mobile = normalizedMobile;
             await user.save();
         }
 

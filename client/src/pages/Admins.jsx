@@ -42,8 +42,10 @@ const Admins = () => {
 
     useEffect(() => {
         fetchAdmins();
-        const interval = setInterval(fetchAdmins, 10000);
-        return () => clearInterval(interval);
+
+        // Listen for real-time refresh events
+        window.addEventListener('refreshData', fetchAdmins);
+        return () => window.removeEventListener('refreshData', fetchAdmins);
     }, [fetchAdmins]);
 
     const handleSubmit = async (e) => {

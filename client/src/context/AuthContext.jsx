@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from 'react';
 import api from '../utils/api';
 import { subscribeToPush } from '../utils/pushUtils';
+import { io } from 'socket.io-client';
 
 const AuthContext = createContext();
 
@@ -10,10 +11,46 @@ export const AuthProvider = ({ children }) => {
         return storedUser ? JSON.parse(storedUser) : null;
     });
     const [loading, setLoading] = useState(false);
+    const [socket, setSocket] = useState(null);
 
     useEffect(() => {
         if (user) {
             subscribeToPush();
+
+            // Initialize socket connection
+            const newSocket = io(window.location.origin.replace('3000', '5000'), {
+                query: { userId: user._id }
+            });
+
+            newSocket.on('notification', (newNotification) => {
+                console.log('Real-time notification received (Global):', newNotification);
+                // Broadcast a global event for components to refresh their data
+                window.dispatchEvent(new CustomEvent('refreshData', { detail: newNotification }));
+
+                // Browser alert
+                if ('Notification' in window && Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification('Booking Update', {
+                            body: newNotification.message,
+                            icon: '/download.png',
+                            badge: '/download.png',
+                            vibrate: [200, 100, 200],
+                            tag: 'booking-update',
+                            renotify: true
+                        });
+                    });
+                }
+
+                // Also dispatch a secondary event for NotificationCenter to catch
+                window.dispatchEvent(new CustomEvent('notificationReceived', { detail: newNotification }));
+            });
+
+            setSocket(newSocket);
+
+            return () => {
+                newSocket.disconnect();
+                setSocket(null);
+            };
         }
     }, [user]);
 
@@ -38,7 +75,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, loginWithMobile, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, loginWithMobile, logout, loading, socket }}>
             {children}
         </AuthContext.Provider>
     );

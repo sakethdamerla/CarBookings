@@ -134,23 +134,38 @@ const createBooking = asyncHandler(async (req, res) => {
         }
     }
 
+    // Standardize mobile for consistent User linking
+    const normalizedMobile = mobile.replace(/\D/g, '').slice(-10);
+
     // Ensure User record exists for notifications (even for guests)
     let bookingUser = req.user?._id;
     if (!bookingUser && mobile) {
-        let existingUser = await User.findOne({ mobile });
+        let existingUser = await User.findOne({
+            $or: [
+                { mobile: mobile.trim() },
+                { mobile: { $regex: new RegExp(normalizedMobile + '$') } }
+            ]
+        });
+
         if (!existingUser) {
             existingUser = await User.create({
                 name: customerName,
-                mobile: mobile,
+                mobile: normalizedMobile,
                 role: 'user'
             });
+        } else {
+            // Update to normalized mobile if needed
+            if (existingUser.mobile !== normalizedMobile) {
+                existingUser.mobile = normalizedMobile;
+                await existingUser.save();
+            }
         }
         bookingUser = existingUser._id;
     }
 
     const booking = await Booking.create({
         customerName,
-        mobile,
+        mobile: normalizedMobile, // Store standardized version
         bookingType,
         car,
         driver,
@@ -226,9 +241,9 @@ const updateBooking = asyncHandler(async (req, res) => {
             let recipientId = booking.user;
 
             if (!recipientId) {
-                // Normalize mobile to digits only for more robust comparison
-                const normalizedMobile = booking.mobile.replace(/\D/g, '');
-                // Try to find user with exact mobile or matching characters at the end
+                // Normalize mobile to last 10 digits
+                const normalizedMobile = booking.mobile.replace(/\D/g, '').slice(-10);
+
                 const customer = await User.findOne({
                     $or: [
                         { mobile: booking.mobile.trim() },
@@ -237,6 +252,9 @@ const updateBooking = asyncHandler(async (req, res) => {
                     role: 'user'
                 });
                 recipientId = customer?._id;
+                console.log(`[NotificationDebug] Recipient lookup for mobile ${booking.mobile} (normalized: ${normalizedMobile}): ${recipientId || 'NOT FOUND'}`);
+            } else {
+                console.log(`[NotificationDebug] Found recipientId from booking.user: ${recipientId}`);
             }
 
             if (recipientId) {
@@ -275,6 +293,10 @@ const updateBooking = asyncHandler(async (req, res) => {
                         bookingId: booking._id
                     });
 
+                    if (notification) {
+                        console.log(`[NotificationDebug] Notification created for ${recipientId}: ${notification._id}`);
+                    }
+
                     // Emit to client via socket
                     emitNotification(recipientId, notification);
 
@@ -285,7 +307,11 @@ const updateBooking = asyncHandler(async (req, res) => {
                         msg,
                         '/customer/bookings'
                     );
+                } else {
+                    console.log(`[NotificationDebug] No notification type determined for status: ${updatedBooking.status}`);
                 }
+            } else {
+                console.warn(`[NotificationDebug] Could not find recipient for notification. Booking ID: ${booking._id}, Mobile: ${booking.mobile}`);
             }
         }
 

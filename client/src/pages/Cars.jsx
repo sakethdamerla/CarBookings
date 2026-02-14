@@ -28,8 +28,10 @@ const Cars = () => {
 
     useEffect(() => {
         fetchCars();
-        const interval = setInterval(fetchCars, 10000);
-        return () => clearInterval(interval);
+
+        // Listen for real-time refresh events
+        window.addEventListener('refreshData', fetchCars);
+        return () => window.removeEventListener('refreshData', fetchCars);
     }, [fetchCars]);
 
     const handleSubmit = async (e) => {
@@ -51,7 +53,9 @@ const Cars = () => {
             }
 
             if (editingId) {
-                await api.put(`/cars/${editingId}`, formData);
+                await api.put(`/cars/${editingId}`, data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             } else {
                 await api.post('/cars', data, {
                     headers: { 'Content-Type': 'multipart/form-data' }

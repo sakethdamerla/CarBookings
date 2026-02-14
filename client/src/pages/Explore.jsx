@@ -25,8 +25,10 @@ const Explore = () => {
 
     useEffect(() => {
         fetchCars();
-        const interval = setInterval(fetchCars, 10000);
-        return () => clearInterval(interval);
+
+        // Listen for real-time refresh events
+        window.addEventListener('refreshData', fetchCars);
+        return () => window.removeEventListener('refreshData', fetchCars);
     }, []);
 
     const filteredCars = cars.filter(car =>

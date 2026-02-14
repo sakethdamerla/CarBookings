@@ -130,8 +130,10 @@ const Approvals = () => {
 
     useEffect(() => {
         fetchPendingBookings();
-        const interval = setInterval(fetchPendingBookings, 10000);
-        return () => clearInterval(interval);
+
+        // Listen for real-time refresh events
+        window.addEventListener('refreshData', fetchPendingBookings);
+        return () => window.removeEventListener('refreshData', fetchPendingBookings);
     }, [fetchPendingBookings]);
 
     const handleAction = async (id, status, totalAmount = null) => {
