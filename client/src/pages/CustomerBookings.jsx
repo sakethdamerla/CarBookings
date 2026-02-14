@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
 import Swal from 'sweetalert2';
+import moment from 'moment';
 
 const CustomerBookings = () => {
     const { user } = useContext(AuthContext);
@@ -65,11 +66,11 @@ const CustomerBookings = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'approved': return 'bg-green-100 text-green-700';
-            case 'pending': return 'bg-yellow-100 text-yellow-700';
-            case 'cancelled': return 'bg-red-100 text-red-700';
-            case 'completed': return 'bg-blue-100 text-blue-700';
-            default: return 'bg-gray-100 text-gray-700';
+            case 'confirmed': return 'bg-green-100 text-green-700 font-black';
+            case 'pending': return 'bg-yellow-100 text-yellow-700 font-black';
+            case 'cancelled': return 'bg-red-100 text-red-700 font-black';
+            case 'completed': return 'bg-blue-100 text-blue-700 font-black';
+            default: return 'bg-gray-100 text-gray-700 font-black';
         }
     };
 
@@ -95,7 +96,7 @@ const CustomerBookings = () => {
                             const seconds = Math.floor((diffMs % 60000) / 1000);
 
                             return (
-                                <div key={booking._id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden flex flex-col hover:shadow-xl transition-all group">
+                                <div key={booking._id} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 relative overflow-hidden flex flex-col hover:shadow-xl transition-all group">
                                     {canCancel && (
                                         <div className="absolute top-0 right-0 left-0 h-1.5 bg-gray-50">
                                             <div
@@ -115,17 +116,31 @@ const CustomerBookings = () => {
                                                 <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{booking.car?.model}</p>
                                             </div>
                                         </div>
-                                        <span className={`text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest ${getStatusColor(booking.status)}`}>
+                                        <span className={`text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-widest ${getStatusColor(booking.status)}`}>
                                             {booking.status}
                                         </span>
                                     </div>
 
                                     <div className="space-y-4 mt-auto">
-                                        <div className="flex items-center gap-3 text-sm font-bold text-gray-600 bg-gray-50 p-4 rounded-xl">
-                                            <Calendar className="w-5 h-5 text-gray-400" />
-                                            <span className="tracking-tight uppercase">
-                                                {new Date(booking.startDate).toLocaleDateString([], { month: 'short', day: 'numeric' })} - {new Date(booking.endDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                                            </span>
+                                        <div className="bg-gray-50 p-4 rounded-2xl space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                    <Calendar size={12} />
+                                                    Pickup
+                                                </div>
+                                                <span className="text-xs font-black text-gray-900">
+                                                    {moment(booking.startDate).format('DD MMM, hh:mm A')}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+                                                <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                    <Calendar size={12} />
+                                                    Dropoff
+                                                </div>
+                                                <span className="text-xs font-black text-gray-900">
+                                                    {moment(booking.endDate).format('DD MMM, hh:mm A')}
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div className="flex justify-between items-end pt-2">

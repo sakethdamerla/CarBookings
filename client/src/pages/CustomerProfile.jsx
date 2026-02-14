@@ -132,6 +132,34 @@ const CustomerProfile = () => {
                             </div>
                         </div>
 
+                        <div className="bg-white p-8 md:p-10 rounded-[2.5rem] md:rounded-[3rem] shadow-xl border border-gray-100">
+                            <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mb-8 border-b border-gray-50 pb-4">Notification Settings</h3>
+                            <div className="space-y-6">
+                                <p className="text-xs text-gray-500 font-medium leading-relaxed">Ensure you receive instant alerts for your booking updates. You can test your device settings below.</p>
+                                <button
+                                    onClick={async () => {
+                                        if (!('Notification' in window)) return alert('Notifications not supported');
+                                        const perm = await Notification.requestPermission();
+                                        if (perm !== 'granted') return alert('Please allow notification permission first');
+
+                                        if ('serviceWorker' in navigator) {
+                                            const reg = await navigator.serviceWorker.ready;
+                                            reg.showNotification('Test Notification', {
+                                                body: 'System notifications are working correctly!',
+                                                icon: '/download.png',
+                                                vibrate: [100, 50, 100],
+                                                badge: '/download.png'
+                                            });
+                                        }
+                                    }}
+                                    className="flex items-center gap-3 px-6 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all active:scale-95 shadow-xl shadow-blue-100"
+                                >
+                                    <Bell className="w-4 h-4" />
+                                    Test System Notification
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="bg-white p-4 md:p-6 rounded-[2rem] shadow-xl border border-gray-100">
                             <button
                                 onClick={handleLogout}

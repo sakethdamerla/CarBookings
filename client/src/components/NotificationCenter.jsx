@@ -25,10 +25,16 @@ const NotificationCenter = () => {
             // Trigger browser notification for the latest unread item if it's new
             const latestUnread = data.filter(n => !n.isRead)[0];
             if (latestUnread && latestUnread._id !== lastNotifiedId.current) {
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('New Car Booking Alert', {
-                        body: latestUnread.message,
-                        icon: '/download.png'
+                if ('Notification' in window && Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification('New Car Booking Alert', {
+                            body: latestUnread.message,
+                            icon: '/download.png',
+                            vibrate: [200, 100, 200],
+                            badge: '/download.png',
+                            tag: 'booking-update', // Prevent duplicate alerts
+                            renotify: true
+                        });
                     });
                 }
                 lastNotifiedId.current = latestUnread._id;
@@ -73,7 +79,7 @@ const NotificationCenter = () => {
         }
 
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 30000);
+        const interval = setInterval(fetchNotifications, 15000);
         return () => clearInterval(interval);
     }, [user]);
 
