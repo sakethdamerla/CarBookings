@@ -27,6 +27,7 @@ const BookCar = () => {
     const [dropLocation, setDropLocation] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -56,22 +57,18 @@ const BookCar = () => {
             return;
         }
 
-        if (!pickupLocation) {
-            setError('Please enter pickup location');
-            setTimeout(() => {
-                document.getElementById('booking-details')?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-            return;
-        }
-        if (bookingType === 'car_with_driver' && !dropLocation) {
-            setError('Please enter drop location');
-            setTimeout(() => {
-                document.getElementById('booking-details')?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
+        const newErrors = {};
+        if (!pickupLocation) newErrors.pickupLocation = 'Pickup address is required';
+        if (bookingType === 'car_with_driver' && !dropLocation) newErrors.dropLocation = 'Drop address is required';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            setError('Please fill in required fields');
             return;
         }
 
         setIsSubmitting(true);
+        setErrors({});
         setError('');
         try {
             const payload = {
@@ -282,9 +279,14 @@ const BookCar = () => {
                                             placeholder="Enter full address for pickup"
                                             value={pickupLocation}
                                             onChange={(e) => setPickupLocation(e.target.value)}
-                                            className="w-full pl-14 pr-6 py-5 bg-gray-50 border border-gray-100 rounded-2xl font-black text-gray-800 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+                                            className={`w-full pl-14 pr-6 py-5 bg-gray-50 border rounded-2xl font-black text-gray-800 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all ${errors.pickupLocation ? 'border-red-500 ring-4 ring-red-500/10' : 'border-gray-100'}`}
                                         />
                                     </div>
+                                    {errors.pickupLocation && (
+                                        <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mt-2 ml-1 animate-in fade-in slide-in-from-top-1">
+                                            {errors.pickupLocation}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {bookingType === 'car_with_driver' && (
@@ -297,9 +299,14 @@ const BookCar = () => {
                                                 placeholder="Enter full address for drop"
                                                 value={dropLocation}
                                                 onChange={(e) => setDropLocation(e.target.value)}
-                                                className="w-full pl-14 pr-6 py-5 bg-gray-50 border border-gray-100 rounded-2xl font-black text-gray-800 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
+                                                className={`w-full pl-14 pr-6 py-5 bg-gray-50 border rounded-2xl font-black text-gray-800 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all ${errors.dropLocation ? 'border-red-500 ring-4 ring-red-500/10' : 'border-gray-100'}`}
                                             />
                                         </div>
+                                        {errors.dropLocation && (
+                                            <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mt-2 ml-1 animate-in fade-in slide-in-from-top-1">
+                                                {errors.dropLocation}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

@@ -32,15 +32,17 @@ const Bookings = () => {
         fetchBookings();
     }, [fetchBookings]);
 
-    // Transform bookings for Calendar
-    const calendarEvents = bookings.map(b => ({
-        id: b._id,
-        title: `${b.customerName} (${b.bookingType === 'driver_only' ? 'Driver' : b.bookingType === 'car_only' ? 'Car' : 'Both'})`,
-        start: new Date(b.startDate),
-        end: new Date(b.endDate),
-        resource: b,
-        allDay: false
-    }));
+    // Transform bookings for Calendar - Filter out cancelled/rejected ones
+    const calendarEvents = bookings
+        .filter(b => !['cancelled', 'rejected'].includes(b.status))
+        .map(b => ({
+            id: b._id,
+            title: `${b.customerName} (${b.bookingType === 'driver_only' ? 'Driver' : b.bookingType === 'car_only' ? 'Car' : 'Both'})`,
+            start: new Date(b.startDate),
+            end: new Date(b.endDate),
+            resource: b,
+            allDay: false
+        }));
 
     const handleSelectEvent = (event) => {
         setSelectedDateBookings([event.resource]);

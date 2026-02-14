@@ -22,6 +22,7 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
 
     const [cars, setCars] = useState([]);
     const [error, setError] = useState('');
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -88,16 +89,27 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
         e.preventDefault();
         setError('');
         setLoading(true);
+        const newErrors = {};
+        if (!formData.customerName) newErrors.customerName = 'Required';
+        if (!formData.mobile) newErrors.mobile = 'Required';
+        if (!formData.startDate) newErrors.startDate = 'Required';
+        if (!formData.endDate) newErrors.endDate = 'Required';
+        if (formData.bookingType !== 'driver_only' && !formData.car) newErrors.car = 'Please select a car';
+
+        if (formData.bookingType === 'car_only' && !formData.pickupLocation) newErrors.pickupLocation = 'Required';
+        if (formData.bookingType !== 'car_only') {
+            if (!formData.pickupLocation) newErrors.pickupLocation = 'Required';
+            if (!formData.dropLocation) newErrors.dropLocation = 'Required';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            setError('Please fill in required fields');
+            setLoading(false);
+            return;
+        }
+
         try {
-            // Basic validation
-            if (formData.bookingType !== 'driver_only' && !formData.car) throw new Error('Please select a car');
-
-            if (formData.bookingType === 'car_only' && !formData.pickupLocation) throw new Error('Please enter car handling location');
-            if (formData.bookingType !== 'car_only') {
-                if (!formData.pickupLocation) throw new Error('Please enter pickup location');
-                if (!formData.dropLocation) throw new Error('Please enter drop location');
-            }
-
             // If car_only, use pickupLocation for dropLocation if not provided
             const finalData = {
                 ...formData,
@@ -163,10 +175,14 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
                                     type="text"
                                     placeholder="Full Name"
                                     required
-                                    className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                    className={`w-full pl-9 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-semibold focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${errors.customerName ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-100'}`}
                                     value={formData.customerName}
-                                    onChange={e => setFormData({ ...formData, customerName: e.target.value })}
+                                    onChange={e => {
+                                        setFormData({ ...formData, customerName: e.target.value });
+                                        if (errors.customerName) setErrors({ ...errors, customerName: null });
+                                    }}
                                 />
+                                {errors.customerName && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.customerName}</p>}
                             </div>
 
                             <div className="relative group">
@@ -175,10 +191,14 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
                                     type="text"
                                     placeholder="Mobile Number"
                                     required
-                                    className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                    className={`w-full pl-9 pr-3 py-2.5 bg-gray-50 border rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${errors.mobile ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-100'}`}
                                     value={formData.mobile}
-                                    onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                                    onChange={e => {
+                                        setFormData({ ...formData, mobile: e.target.value });
+                                        if (errors.mobile) setErrors({ ...errors, mobile: null });
+                                    }}
                                 />
+                                {errors.mobile && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.mobile}</p>}
                             </div>
                         </div>
 
@@ -189,20 +209,28 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
                                 <input
                                     type="datetime-local"
                                     required
-                                    className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    className={`w-full p-2.5 bg-gray-50 border rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all ${errors.startDate ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-100'}`}
                                     value={formData.startDate}
-                                    onChange={e => setFormData({ ...formData, startDate: e.target.value })}
+                                    onChange={e => {
+                                        setFormData({ ...formData, startDate: e.target.value });
+                                        if (errors.startDate) setErrors({ ...errors, startDate: null });
+                                    }}
                                 />
+                                {errors.startDate && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.startDate}</p>}
                             </div>
                             <div>
                                 <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 ml-1">End Date</label>
                                 <input
                                     type="datetime-local"
                                     required
-                                    className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    className={`w-full p-2.5 bg-gray-50 border rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all ${errors.endDate ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-100'}`}
                                     value={formData.endDate}
-                                    onChange={e => setFormData({ ...formData, endDate: e.target.value })}
+                                    onChange={e => {
+                                        setFormData({ ...formData, endDate: e.target.value });
+                                        if (errors.endDate) setErrors({ ...errors, endDate: null });
+                                    }}
                                 />
+                                {errors.endDate && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.endDate}</p>}
                             </div>
                         </div>
 
@@ -215,10 +243,14 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
                                         type="text"
                                         required
                                         placeholder="Where will you pick up & drop off?"
-                                        className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                        className={`w-full p-2.5 bg-gray-50 border rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all ${errors.pickupLocation ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-100'}`}
                                         value={formData.pickupLocation}
-                                        onChange={e => setFormData({ ...formData, pickupLocation: e.target.value })}
+                                        onChange={e => {
+                                            setFormData({ ...formData, pickupLocation: e.target.value });
+                                            if (errors.pickupLocation) setErrors({ ...errors, pickupLocation: null });
+                                        }}
                                     />
+                                    {errors.pickupLocation && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.pickupLocation}</p>}
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -228,10 +260,14 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
                                             type="text"
                                             required
                                             placeholder="Enter pickup address"
-                                            className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                            className={`w-full p-2.5 bg-gray-50 border rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all ${errors.pickupLocation ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-100'}`}
                                             value={formData.pickupLocation}
-                                            onChange={e => setFormData({ ...formData, pickupLocation: e.target.value })}
+                                            onChange={e => {
+                                                setFormData({ ...formData, pickupLocation: e.target.value });
+                                                if (errors.pickupLocation) setErrors({ ...errors, pickupLocation: null });
+                                            }}
                                         />
+                                        {errors.pickupLocation && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.pickupLocation}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 ml-1">Drop Location</label>
@@ -239,10 +275,14 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
                                             type="text"
                                             required
                                             placeholder="Enter drop address"
-                                            className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                            className={`w-full p-2.5 bg-gray-50 border rounded-xl text-xs font-semibold focus:ring-2 focus:ring-blue-500 outline-none transition-all ${errors.dropLocation ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-100'}`}
                                             value={formData.dropLocation}
-                                            onChange={e => setFormData({ ...formData, dropLocation: e.target.value })}
+                                            onChange={e => {
+                                                setFormData({ ...formData, dropLocation: e.target.value });
+                                                if (errors.dropLocation) setErrors({ ...errors, dropLocation: null });
+                                            }}
                                         />
+                                        {errors.dropLocation && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.dropLocation}</p>}
                                     </div>
                                 </div>
                             )}
@@ -288,14 +328,20 @@ const BookingForm = ({ onClose, onSuccess, initialData = {}, isCustomerView = fa
 
                         {/* Car Selection (Hidden if Car provided in initialData for Customer) */}
                         {(!isCustomerView || !initialData.car) && formData.bookingType !== 'driver_only' && (
-                            <select
-                                className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none"
-                                value={formData.car}
-                                onChange={e => setFormData({ ...formData, car: e.target.value })}
-                            >
-                                <option value="">Select Car</option>
-                                {cars.map(c => <option key={c._id} value={c._id}>{c.name} ({c.model})</option>)}
-                            </select>
+                            <>
+                                <select
+                                    className={`w-full p-2.5 bg-gray-50 border rounded-xl text-sm outline-none ${errors.car ? 'border-red-500 ring-2 ring-red-500/10' : 'border-gray-200'}`}
+                                    value={formData.car}
+                                    onChange={e => {
+                                        setFormData({ ...formData, car: e.target.value });
+                                        if (errors.car) setErrors({ ...errors, car: null });
+                                    }}
+                                >
+                                    <option value="">Select Car</option>
+                                    {cars.map(c => <option key={c._id} value={c._id}>{c.name} ({c.model})</option>)}
+                                </select>
+                                {errors.car && <p className="text-[10px] text-red-500 font-bold mt-1 ml-1">{errors.car}</p>}
+                            </>
                         )}
 
                         {!isCustomerView && (

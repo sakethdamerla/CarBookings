@@ -69,7 +69,7 @@ const createBooking = asyncHandler(async (req, res) => {
 
         const carConflict = await Booking.findOne({
             car,
-            status: { $ne: 'cancelled' },
+            status: { $nin: ['cancelled', 'rejected'] },
             $or: [
                 { startDate: { $lt: end }, endDate: { $gt: start } },
             ],
@@ -85,7 +85,7 @@ const createBooking = asyncHandler(async (req, res) => {
     if (driver) {
         const driverConflict = await Booking.findOne({
             driver,
-            status: { $ne: 'cancelled' },
+            status: { $nin: ['cancelled', 'rejected'] },
             $or: [
                 { startDate: { $lt: end }, endDate: { $gt: start } },
             ],
@@ -186,7 +186,7 @@ const getCarAvailability = asyncHandler(async (req, res) => {
 
     const bookings = await Booking.find({
         car: carId,
-        status: { $ne: 'cancelled' },
+        status: { $nin: ['cancelled', 'rejected'] },
         $or: [
             { startDate: { $lt: nextWeek }, endDate: { $gt: today } },
         ],

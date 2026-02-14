@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { ArrowLeft, User, Phone, LogOut, Loader2, Mail, KeyRound } from 'lucide-react';
+import { ArrowLeft, User, Phone, LogOut, Loader2, Mail, KeyRound, Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 
