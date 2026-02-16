@@ -70,7 +70,14 @@ const Cars = () => {
     };
 
     const handleEdit = (car) => {
-        setFormData({ ...car, image: null, pricePer24h: car.pricePer24h || 0 }); // Don't preload image file
+        setFormData({
+            ...car,
+            image: null,
+            pricePer24h: car.pricePer24h || 0,
+            transmission: car.transmission || 'Manual',
+            fuelType: car.fuelType || 'Petrol',
+            seats: car.seats || 4
+        });
         setEditingId(car._id);
         setFormVisible(true);
     };
@@ -103,7 +110,18 @@ const Cars = () => {
                     onClick={() => {
                         setFormVisible(true);
                         setEditingId(null);
-                        setFormData({ name: '', model: '', registrationNumber: '', type: 'Sedan', status: 'available', pricePer24h: 0 });
+                        setFormData({
+                            name: '',
+                            model: '',
+                            registrationNumber: '',
+                            type: 'Sedan',
+                            status: 'available',
+                            pricePer24h: 0,
+                            transmission: 'Manual',
+                            fuelType: 'Petrol',
+                            seats: 4,
+                            image: null
+                        });
                     }}
                     className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all text-sm font-semibold flex items-center"
                 >

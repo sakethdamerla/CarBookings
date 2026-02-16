@@ -45,12 +45,12 @@ const createCar = asyncHandler(async (req, res) => {
         name,
         model,
         registrationNumber,
-        type,
+        type: type || 'Sedan',
         pricePer24h: pricePer24h || 0,
-        transmission,
-        fuelType,
-        seats,
-        images: [image], // Storing as array for now to match schema if it is array, or just image string
+        transmission: transmission || 'Manual',
+        fuelType: fuelType || 'Petrol',
+        seats: seats || 4,
+        images: [image],
     });
 
     if (car) {
@@ -80,9 +80,9 @@ const updateCar = asyncHandler(async (req, res) => {
         car.type = req.body.type || car.type;
         car.status = req.body.status || car.status;
         car.pricePer24h = req.body.pricePer24h !== undefined ? Number(req.body.pricePer24h) : car.pricePer24h;
-        car.transmission = req.body.transmission || car.transmission;
-        car.fuelType = req.body.fuelType || car.fuelType;
-        car.seats = req.body.seats !== undefined ? Number(req.body.seats) : car.seats;
+        car.transmission = req.body.transmission || car.transmission || 'Manual';
+        car.fuelType = req.body.fuelType || car.fuelType || 'Petrol';
+        car.seats = req.body.seats !== undefined ? Number(req.body.seats) : (car.seats || 4);
         car.assignedDriver = req.body.assignedDriver || car.assignedDriver;
 
         const updatedCar = await car.save();
