@@ -145,7 +145,9 @@ const Dashboard = () => {
                                         </td>
                                         <td className="px-8 py-6">
                                             <p className="font-black text-gray-900 text-sm whitespace-nowrap">{booking.car?.name || 'Manual'}</p>
-                                            <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">{booking.bookingType.replace('_', ' ')}</p>
+                                            <p className={`text-[8px] px-2 py-0.5 rounded-md font-bold uppercase tracking-widest inline-block ${booking.bookingType === 'car_with_driver' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                                                {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
+                                            </p>
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-2">

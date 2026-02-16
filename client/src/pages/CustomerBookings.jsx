@@ -127,6 +127,14 @@ const CustomerBookings = () => {
 
                                     <div className="space-y-4 mt-auto">
                                         <div className="bg-gray-50 p-4 rounded-2xl space-y-3">
+                                            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+                                                <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                    Booking Type
+                                                </div>
+                                                <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${booking.bookingType === 'car_with_driver' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                                    {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
+                                                </span>
+                                            </div>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                                     <Calendar size={12} />

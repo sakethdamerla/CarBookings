@@ -316,6 +316,11 @@ const Bookings = () => {
                                             <div>
                                                 <div className="font-bold text-gray-900">{booking.customerName}</div>
                                                 <div className="text-xs text-gray-500">{booking.mobile}</div>
+                                                <div className="mt-1">
+                                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${booking.bookingType === 'car_with_driver' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                                        {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
@@ -365,8 +370,8 @@ const Bookings = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium border border-gray-200 capitalize">
-                                                    {booking.bookingType.replace(/_/g, ' ')}
+                                                <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest border border-gray-200 ${booking.bookingType === 'car_with_driver' ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                                                    {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">

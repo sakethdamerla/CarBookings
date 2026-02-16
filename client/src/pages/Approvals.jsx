@@ -190,8 +190,8 @@ const Approvals = () => {
                         <div key={booking._id} className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl hover:shadow-gray-200/50 transition-all flex flex-col group">
                             <div className="p-6 flex-1">
                                 <div className="flex justify-between items-start mb-6">
-                                    <span className="inline-flex items-center px-4 py-2 rounded-xl text-[10px] font-black bg-black text-white uppercase tracking-widest">
-                                        {booking.bookingType.replace('_', ' ')}
+                                    <span className={`inline-flex items-center px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${booking.bookingType === 'car_with_driver' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                                        {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
                                     </span>
                                     <div className="flex flex-col items-end">
                                         <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Received</span>
@@ -234,7 +234,7 @@ const Approvals = () => {
                                             <Truck className="w-5 h-5 mr-4 text-blue-600" />
                                             <div>
                                                 <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Requested Car</p>
-                                                <p className="font-black text-blue-900 text-sm">{booking.car.name}</p>
+                                                <p className="font-black text-blue-900 text-sm">{booking.car?.name}</p>
                                             </div>
                                         </div>
                                     )}
