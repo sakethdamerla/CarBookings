@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Search, Star, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
@@ -7,29 +8,26 @@ import GuestLoginModal from '../components/GuestLoginModal';
 
 const Explore = () => {
     const { user } = useContext(AuthContext);
+    const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const [cars, setCars] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showGuestModal, setShowGuestModal] = useState(false);
     const [guestUser, setGuestUser] = useState(JSON.parse(localStorage.getItem('guestUser')));
     const [pendingNavCarId, setPendingNavCarId] = useState(null);
 
-    const fetchCars = async () => {
-        try {
+    const { data: cars = [], isLoading: loading } = useQuery({
+        queryKey: ['availableCars'],
+        queryFn: async () => {
             const { data } = await api.get('/cars');
-            setCars(data.filter(c => c.status === 'available'));
-        } catch (error) {
-            console.error(error);
-        }
-    };
+            return data.filter(c => c.status === 'available');
+        },
+    });
 
     useEffect(() => {
-        fetchCars();
-
-        // Listen for real-time refresh events
-        window.addEventListener('refreshData', fetchCars);
-        return () => window.removeEventListener('refreshData', fetchCars);
-    }, []);
+        const handleRefresh = () => queryClient.invalidateQueries(['availableCars']);
+        window.addEventListener('refreshData', handleRefresh);
+        return () => window.removeEventListener('refreshData', handleRefresh);
+    }, [queryClient]);
 
     const filteredCars = cars.filter(car =>
         car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

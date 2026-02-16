@@ -21,7 +21,7 @@ const carSchema = mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['available', 'maintenance', 'booked'],
+        enum: ['available', 'maintenance', 'booked', 'unavailable'],
         default: 'available',
     },
     pricePer24h: {

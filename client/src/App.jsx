@@ -19,6 +19,17 @@ import SuperAdminSettings from './pages/SuperAdminSettings';
 import CustomerLayout from './components/CustomerLayout';
 import Layout from './components/Layout';
 import PWAInstaller from './components/PWAInstaller';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      cacheTime: 1000 * 60 * 30, // 30 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 
 // Protected Route Component
@@ -45,53 +56,55 @@ const RootRedirect = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <PWAInstaller />
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin/login" element={<Login />} />
-          <Route path="/customer/login" element={<CustomerLogin />} />
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <PWAInstaller />
+        <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin/login" element={<Login />} />
+            <Route path="/customer/login" element={<CustomerLogin />} />
 
-          <Route path="/" element={<RootRedirect />} />
+            <Route path="/" element={<RootRedirect />} />
 
-          {/* Admin Routes - Protected */}
-          <Route path="/admin" element={
-            <PrivateRoute>
-              <Layout />
-            </PrivateRoute>
-          }>
-            <Route index element={<Dashboard />} />
-            <Route path="cars" element={<Cars />} />
-            <Route path="bookings" element={<Bookings />} />
-            <Route path="admins" element={<Admins />} />
-            <Route path="approvals" element={<Approvals />} />
-            <Route path="profile" element={<AdminProfile />} />
-            <Route path="settings" element={<SuperAdminSettings />} />
-          </Route>
+            {/* Admin Routes - Protected */}
+            <Route path="/admin" element={
+              <PrivateRoute>
+                <Layout />
+              </PrivateRoute>
+            }>
+              <Route index element={<Dashboard />} />
+              <Route path="cars" element={<Cars />} />
+              <Route path="bookings" element={<Bookings />} />
+              <Route path="admins" element={<Admins />} />
+              <Route path="approvals" element={<Approvals />} />
+              <Route path="profile" element={<AdminProfile />} />
+              <Route path="settings" element={<SuperAdminSettings />} />
+            </Route>
 
-          {/* Customer Routes - Public with Layout */}
-          <Route element={<CustomerLayout />}>
-            <Route path="/customer/home" element={<CustomerHome />} />
-            <Route path="/car/:id" element={<CarDetails />} />
-            <Route path="/customer/bookings" element={<CustomerBookings />} />
-            <Route path="/customer/profile" element={<CustomerProfile />} />
-            <Route path="/customer/explore" element={<Explore />} />
-            <Route path="/book/:id" element={<BookCar />} />
-          </Route>
+            {/* Customer Routes - Public with Layout */}
+            <Route element={<CustomerLayout />}>
+              <Route path="/customer/home" element={<CustomerHome />} />
+              <Route path="/car/:id" element={<CarDetails />} />
+              <Route path="/customer/bookings" element={<CustomerBookings />} />
+              <Route path="/customer/profile" element={<CustomerProfile />} />
+              <Route path="/customer/explore" element={<Explore />} />
+              <Route path="/book/:id" element={<BookCar />} />
+            </Route>
 
-          {/* Legacy/Utility Redirects */}
-          <Route path="/cars" element={<Navigate to="/admin/cars" replace />} />
-          <Route path="/bookings" element={<Navigate to="/admin/bookings" replace />} />
-          <Route path="/admins" element={<Navigate to="/admin/admins" replace />} />
-          <Route path="/approvals" element={<Navigate to="/admin/approvals" replace />} />
+            {/* Legacy/Utility Redirects */}
+            <Route path="/cars" element={<Navigate to="/admin/cars" replace />} />
+            <Route path="/bookings" element={<Navigate to="/admin/bookings" replace />} />
+            <Route path="/admins" element={<Navigate to="/admin/admins" replace />} />
+            <Route path="/approvals" element={<Navigate to="/admin/approvals" replace />} />
 
-          {/* Catch-all route */}
-          <Route path="*" element={<RootRedirect />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+            {/* Catch-all route */}
+            <Route path="*" element={<RootRedirect />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
 import { Plus, Edit, Trash, Search, Car, AlertCircle, ImageIcon, Loader2 } from 'lucide-react';
 
 const Cars = () => {
-    const [cars, setCars] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [formVisible, setFormVisible] = useState(false);
     const [formData, setFormData] = useState({
         name: '', model: '', registrationNumber: '', type: 'Sedan', status: 'available', pricePer24h: 0,
@@ -14,25 +14,19 @@ const Cars = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const fetchCars = useCallback(async () => {
-        try {
-            setLoading(true);
+    const { data: cars = [], isLoading: loading } = useQuery({
+        queryKey: ['cars'],
+        queryFn: async () => {
             const { data } = await api.get('/cars');
-            setCars(data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+            return data;
+        },
+    });
 
     useEffect(() => {
-        fetchCars();
-
-        // Listen for real-time refresh events
-        window.addEventListener('refreshData', fetchCars);
-        return () => window.removeEventListener('refreshData', fetchCars);
-    }, [fetchCars]);
+        const handleRefresh = () => queryClient.invalidateQueries(['cars']);
+        window.addEventListener('refreshData', handleRefresh);
+        return () => window.removeEventListener('refreshData', handleRefresh);
+    }, [queryClient]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -63,9 +57,9 @@ const Cars = () => {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             }
-            fetchCars();
+            queryClient.invalidateQueries(['cars']);
             setFormVisible(false);
-            setFormData({ name: '', model: '', registrationNumber: '', type: 'Sedan', status: 'available', pricePer24h: 0, image: null });
+            setFormData({ name: '', model: '', registrationNumber: '', type: 'Sedan', status: 'available', pricePer24h: 0, image: null, transmission: 'Manual', fuelType: 'Petrol', seats: 4 });
             setEditingId(null);
         } catch (error) {
             console.error('[EditDebug] Submission failed:', error.response?.data || error.message);
@@ -85,7 +79,7 @@ const Cars = () => {
         if (window.confirm('Delete this car?')) {
             try {
                 await api.delete(`/cars/${id}`);
-                fetchCars();
+                queryClient.invalidateQueries(['cars']);
             } catch (error) {
                 console.error(error);
             }
@@ -152,7 +146,7 @@ const Cars = () => {
                                                 <ImageIcon className="w-10 h-10" />
                                             </div>
                                         )}
-                                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="absolute top-3 right-3 flex gap-2 transition-opacity">
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); handleEdit(car); }}
                                                 className="p-2 bg-white/90 backdrop-blur-sm text-blue-600 rounded-lg hover:bg-blue-50 transition-colors shadow-sm"

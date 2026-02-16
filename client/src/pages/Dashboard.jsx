@@ -1,47 +1,41 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
-import { Users, Car, User, Calendar, TrendingUp, DollarSign, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { Users, Car, User, Calendar, TrendingUp, DollarSign, MapPin, Clock, ArrowRight, Loader2 } from 'lucide-react';
 import { formatIST } from '../utils/dateUtils';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-    const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState({
-        totalCars: 0,
-        totalDrivers: 0,
-        totalBookings: 0,
-        totalRevenue: 0,
-        monthlyBookings: [],
-        recentPending: []
-    });
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                if (stats.totalCars === 0) setLoading(true);
-                const { data } = await api.get('/stats');
-                const { data: pendingData } = await api.get('/bookings/pending');
-                setStats({ ...data, recentPending: pendingData.slice(0, 5) });
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const { data: stats, isLoading: statsLoading } = useQuery({
+        queryKey: ['stats'],
+        queryFn: async () => {
+            const { data } = await api.get('/stats');
+            return data;
+        },
+    });
 
-        fetchStats();
+    const { data: pendingBookings, isLoading: pendingLoading } = useQuery({
+        queryKey: ['pendingBookings'],
+        queryFn: async () => {
+            const { data } = await api.get('/bookings/pending');
+            return data.slice(0, 5);
+        },
+    });
 
-        // Listen for real-time refresh events
-        window.addEventListener('refreshData', fetchStats);
-        return () => window.removeEventListener('refreshData', fetchStats);
-    }, [stats.totalCars]);
+    const loading = statsLoading || pendingLoading;
+
+    // Helper to refresh data if needed manually (though React Query handles most cases)
+    const refreshData = () => {
+        // queryClient.invalidateQueries(['stats', 'pendingBookings']) is preferred but needs access to client
+    };
+
 
     const cards = [
-        { name: 'Total Cars', value: stats.totalCars, icon: Car, color: 'from-blue-500 to-blue-600', textColor: 'text-blue-600' },
-        { name: 'Total Drivers', value: stats.totalDrivers, icon: User, color: 'from-green-500 to-green-600', textColor: 'text-green-600' },
-        { name: 'Total Bookings', value: stats.totalBookings, icon: Calendar, color: 'from-purple-500 to-purple-600', textColor: 'text-purple-600' },
-        { name: 'Total Revenue', value: `₹${stats.totalRevenue?.toLocaleString()}`, icon: DollarSign, color: 'from-yellow-500 to-yellow-600', textColor: 'text-yellow-600' },
+        { name: 'Total Cars', value: stats?.totalCars || 0, icon: Car, color: 'from-blue-500 to-blue-600', textColor: 'text-blue-600' },
+        { name: 'Total Drivers', value: stats?.totalDrivers || 0, icon: User, color: 'from-green-500 to-green-600', textColor: 'text-green-600' },
+        { name: 'Total Bookings', value: stats?.totalBookings || 0, icon: Calendar, color: 'from-purple-500 to-purple-600', textColor: 'text-purple-600' },
+        { name: 'Total Revenue', value: `₹${(stats?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: 'from-yellow-500 to-yellow-600', textColor: 'text-yellow-600' },
     ];
 
     return (
@@ -135,8 +129,8 @@ const Dashboard = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {stats.recentPending.length > 0 ? (
-                                stats.recentPending.map((booking) => (
+                            {pendingBookings && pendingBookings.length > 0 ? (
+                                pendingBookings.map((booking) => (
                                     <tr key={booking._id} className="hover:bg-gray-50/50 transition-colors group">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">

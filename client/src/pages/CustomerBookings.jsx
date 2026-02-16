@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Car, Calendar, DollarSign, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
@@ -9,40 +10,35 @@ import { formatIST, getIST } from '../utils/dateUtils';
 
 const CustomerBookings = () => {
     const { user } = useContext(AuthContext);
+    const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const [bookings, setBookings] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [now, setNow] = useState(new Date());
 
     const guestUser = JSON.parse(localStorage.getItem('guestUser'));
     const userMobile = user?.mobile || guestUser?.mobile;
 
-    const fetchBookings = async () => {
-        try {
-            if (userMobile) {
-                const { data } = await api.get(`/bookings?mobile=${userMobile}`);
-                setBookings(data);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { data: bookings = [], isLoading: loading } = useQuery({
+        queryKey: ['customerBookings', userMobile],
+        queryFn: async () => {
+            if (!userMobile) return [];
+            const { data } = await api.get(`/bookings?mobile=${userMobile}`);
+            return data;
+        },
+        enabled: !!userMobile,
+    });
 
     useEffect(() => {
-        fetchBookings();
         // Update timer every second for cancellation countdown
         const timerInterval = setInterval(() => setNow(new Date()), 1000);
 
-        // Listen for real-time refresh events
-        window.addEventListener('refreshData', fetchBookings);
+        const handleRefresh = () => queryClient.invalidateQueries(['customerBookings', userMobile]);
+        window.addEventListener('refreshData', handleRefresh);
 
         return () => {
             clearInterval(timerInterval);
-            window.removeEventListener('refreshData', fetchBookings);
+            window.removeEventListener('refreshData', handleRefresh);
         };
-    }, [userMobile]);
+    }, [userMobile, queryClient]);
 
     const handleCancel = async (bookingId) => {
         const result = await Swal.fire({
@@ -59,7 +55,7 @@ const CustomerBookings = () => {
             try {
                 await api.post(`/bookings/${bookingId}/cancel`);
                 await Swal.fire('Cancelled!', 'Your booking has been cancelled.', 'success');
-                fetchBookings();
+                queryClient.invalidateQueries(['customerBookings', userMobile]);
             } catch (error) {
                 Swal.fire('Error', error.response?.data?.message || 'Failed to cancel', 'error');
             }
