@@ -116,14 +116,20 @@ const BookCar = () => {
             await api.post('/bookings', payload);
 
             await Swal.fire({
-                title: 'Booking Requested!',
-                text: 'Your request is received. The final price will be calculated and shared by the Admin shortly.',
+                title: '<span class="text-2xl font-black uppercase tracking-tighter italic">Booked!</span>',
+                html: '<p class="text-sm font-bold text-gray-500 uppercase tracking-widest leading-relaxed">Your luxury ride is being prepared! The final price will be calculated and shared by the Admin shortly.</p>',
                 icon: 'success',
-                confirmButtonColor: '#2563EB',
-                confirmButtonText: 'Great!'
+                iconColor: '#000',
+                showConfirmButton: true,
+                confirmButtonText: 'View My Bookings',
+                confirmButtonColor: '#000',
+                customClass: {
+                    popup: 'rounded-[3rem] p-8 border-none shadow-2xl',
+                    confirmButton: 'rounded-2xl px-10 py-4 font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all'
+                }
             });
 
-            navigate('/customer-home');
+            navigate('/customer/bookings');
         } catch (err) {
             setError(err.response?.data?.message || 'Error creating booking');
         } finally {

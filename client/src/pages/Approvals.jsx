@@ -38,9 +38,16 @@ const ApprovalModal = ({ booking, onConfirm, onCancel, loading }) => {
                                 {days > 0 ? `${days}d ` : ''}{hours}h
                             </p>
                         </div>
-                        <div className="bg-gray-50 p-4 rounded-3xl border border-gray-100">
+                        <div className="bg-gray-50 p-4 rounded-3xl border border-gray-100 flex flex-col justify-center">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Vehicle</p>
-                            <p className="font-black text-gray-900 truncate">{booking.car?.name || 'Manual Selection'}</p>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-black text-gray-900 truncate max-w-[120px] sm:max-w-none">
+                                    {booking.car?.name || 'Manual Selection'}
+                                </p>
+                                <span className={`text-[8px] px-2 py-0.5 rounded-md uppercase tracking-widest font-black shrink-0 ${booking.bookingType === 'car_with_driver' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                    {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -234,7 +241,12 @@ const Approvals = () => {
                                             <Truck className="w-5 h-5 mr-4 text-blue-600" />
                                             <div>
                                                 <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Requested Car</p>
-                                                <p className="font-black text-blue-900 text-sm">{booking.car?.name}</p>
+                                                <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                                                    <p className="font-black text-blue-900 text-sm">{booking.car?.name}</p>
+                                                    <span className={`text-[7px] sm:text-[8px] px-1.5 sm:px-2 py-0.5 rounded-md uppercase tracking-widest font-black shrink-0 ${booking.bookingType === 'car_with_driver' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                                        {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     )}

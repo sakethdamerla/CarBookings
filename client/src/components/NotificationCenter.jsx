@@ -88,13 +88,17 @@ const NotificationCenter = ({ trigger }) => {
         }
     };
 
+    const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
     const markAllRead = async () => {
         if (!user) return;
+        setIsMarkingAllRead(true);
         try {
             await api.put('/notifications/read-all');
             fetchNotifications();
         } catch (error) {
             console.error('Failed to mark all as read:', error);
+        } finally {
+            setIsMarkingAllRead(false);
         }
     };
 
@@ -157,9 +161,10 @@ const NotificationCenter = ({ trigger }) => {
                         {unreadCount > 0 && (
                             <button
                                 onClick={markAllRead}
-                                className="text-[10px] font-black text-gray-900 underline underline-offset-4 uppercase tracking-widest hover:text-black transition-colors"
+                                disabled={isMarkingAllRead}
+                                className="text-[10px] font-black text-gray-900 underline underline-offset-4 uppercase tracking-widest hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Mark all as read
+                                {isMarkingAllRead ? 'Marking...' : 'Mark all as read'}
                             </button>
                         )}
                     </div>

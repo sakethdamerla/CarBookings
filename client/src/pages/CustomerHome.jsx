@@ -101,16 +101,6 @@ const CustomerHome = () => {
                                     </div>
                                 )}
                             />
-                            <button
-                                onClick={() => {
-                                    if (user) logout();
-                                    localStorage.removeItem('guestUser');
-                                    setGuestUser(null);
-                                }}
-                                className="bg-white/10 hover:bg-white/20 p-3 md:p-4 rounded-2xl border border-white/10 backdrop-blur-md transition-all group active:scale-95"
-                            >
-                                <LogOut className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:rotate-12 transition-transform" />
-                            </button>
                         </div>
                     </div>
 

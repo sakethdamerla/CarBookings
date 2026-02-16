@@ -1,23 +1,25 @@
 import { useEffect, useState, useContext } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Car, Calendar, DollarSign, Clock } from 'lucide-react';
+import { ArrowLeft, Car, Calendar, DollarSign, Clock, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
 import Swal from 'sweetalert2';
 import moment from 'moment';
 import { formatIST, getIST } from '../utils/dateUtils';
+import GuestLoginModal from '../components/GuestLoginModal';
 
 const CustomerBookings = () => {
     const { user } = useContext(AuthContext);
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const [now, setNow] = useState(new Date());
+    const [showGuestModal, setShowGuestModal] = useState(false);
 
     const guestUser = JSON.parse(localStorage.getItem('guestUser'));
     const userMobile = user?.mobile || guestUser?.mobile;
 
-    const { data: bookings = [], isLoading: loading } = useQuery({
+    const { data: bookings = [], isLoading: loading, refetch } = useQuery({
         queryKey: ['customerBookings', userMobile],
         queryFn: async () => {
             if (!userMobile) return [];
@@ -77,6 +79,43 @@ const CustomerBookings = () => {
             default: return 'bg-gray-100 text-gray-700 font-black';
         }
     };
+
+    if (!userMobile) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50/50 px-4">
+                <div className="max-w-md w-full bg-white p-10 rounded-[3rem] shadow-2xl border border-gray-100 text-center space-y-8 animate-in zoom-in-95 duration-500">
+                    <div className="w-20 h-20 bg-black rounded-[2rem] flex items-center justify-center mx-auto shadow-xl shadow-gray-200">
+                        <UserCheck className="w-10 h-10 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-black uppercase tracking-tighter italic text-gray-900 leading-tight">Identity Required</h2>
+                        <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mt-2 leading-relaxed">Please provide your mobile number to view your booking history</p>
+                    </div>
+                    <button
+                        onClick={() => setShowGuestModal(true)}
+                        className="w-full py-5 bg-black text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-blue-600 transition-all shadow-2xl shadow-gray-400 active:scale-95"
+                    >
+                        Enter Name & Mobile
+                    </button>
+                    <button
+                        onClick={() => navigate('/customer/home')}
+                        className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-black transition-colors"
+                    >
+                        Go back to home
+                    </button>
+                </div>
+                <GuestLoginModal
+                    isOpen={showGuestModal}
+                    onClose={() => setShowGuestModal(false)}
+                    onConfirm={() => {
+                        setShowGuestModal(false);
+                        // The userMobile will update via storage event or re-render
+                        window.location.reload();
+                    }}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="pb-32">
