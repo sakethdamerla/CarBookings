@@ -127,7 +127,7 @@ const CustomerHome = () => {
                     <div className="flex justify-between items-end mb-8 px-2">
                         <div>
                             <h2 className="font-black text-2xl md:text-3xl text-gray-900 tracking-tight">Popular Cars</h2>
-                            <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-widest mt-1">Handpicked for you</p>
+                            <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-widest mt-1">Available in 10+ locations</p>
                         </div>
                         <button className="text-black text-sm font-black uppercase tracking-widest hover:underline decoration-4 underline-offset-8">See All</button>
                     </div>
