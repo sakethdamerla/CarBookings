@@ -62,7 +62,7 @@ const Layout = () => {
             >
                 <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100">
                     <div className={`font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 truncate ${isSidebarOpen ? 'text-xl' : 'hidden'}`}>
-                        BookYourCar
+                        BookMyCar
                     </div>
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hidden md:block">
                         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}

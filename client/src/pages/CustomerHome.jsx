@@ -172,6 +172,16 @@ const CustomerHome = () => {
                 </section>
             </main>
 
+            {/* Footer Section */}
+            <footer className="max-w-7xl h-1 mx-auto px-4 md:px-8 py-10 pb-36 mt-30 text-center border-t border-gray-50">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">© 2026 All Rights Reserved</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-gray-400 mt-2 italic flex items-center justify-center gap-2">
+                    <span className="w-4 h-[1px] bg-gray-100"></span>
+                    Developed by Saketh
+                    <span className="w-4 h-[1px] bg-gray-100"></span>
+                </p>
+            </footer>
+
             {/* Guest Login Modal */}
             <GuestLoginModal
                 isOpen={showGuestModal}
