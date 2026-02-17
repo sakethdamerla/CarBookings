@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
-import { Car, User, MapPin, Search, Heart, Star, LogOut, Calendar, Fuel, Bell, Settings2 } from 'lucide-react';
+import { Car, User, MapPin, Search, Heart, Star, Calendar, Fuel, Bell, Settings2 } from 'lucide-react';
 import GuestLoginModal from '../components/GuestLoginModal';
 import NotificationCenter from '../components/NotificationCenter';
 

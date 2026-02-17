@@ -16,21 +16,6 @@ const CustomerLayout = () => {
 
     return (
         <div className="min-h-screen bg-gray-200 flex flex-col items-center">
-            {/* Minimal Top Actions - Notification and Logout */}
-            <div className="fixed top-4 right-4 md:top-8 md:right-8 z-[60] flex items-center gap-3">
-                <div className="bg-white/80 backdrop-blur-xl border border-gray-100 p-1 rounded-2xl shadow-xl flex items-center gap-1 group transition-all duration-300">
-                    {user && (
-                        <button
-                            onClick={logout}
-                            className="flex items-center gap-2 p-2 px-3 text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-90 group/btn"
-                            title="Sign Out"
-                        >
-                            <LogOut size={20} className="group-hover/btn:translate-x-0.5 transition-transform" />
-                            <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Exit</span>
-                        </button>
-                    )}
-                </div>
-            </div>
             {/* Main Content Area - Centered with max-width for desktop */}
             <div className="w-full max-w-[1400px] flex-1 flex flex-col relative">
                 <main className="flex-1 w-full">
