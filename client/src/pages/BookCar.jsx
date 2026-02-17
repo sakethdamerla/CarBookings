@@ -116,20 +116,29 @@ const BookCar = () => {
             await api.post('/bookings', payload);
 
             await Swal.fire({
-                title: '<span class="text-2xl font-black uppercase tracking-tighter italic">Booked!</span>',
-                html: '<p class="text-sm font-bold text-gray-500 uppercase tracking-widest leading-relaxed">Your luxury ride is being prepared! The final price will be calculated and shared by the Admin shortly.</p>',
+                title: '<span class="text-2xl font-black uppercase tracking-tighter italic text-blue-600">Booking Confirmed!</span>',
+                html: `
+                    <div class="space-y-4 pt-4">
+                        <p class="text-sm font-bold text-gray-500 uppercase tracking-widest leading-relaxed">
+                            Excellent choice! Your booking for <span class="text-black font-black">${car.name}</span> has been received.
+                        </p>
+                        <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">
+                            Admin will contact you shortly with the final price!
+                        </p>
+                    </div>
+                `,
                 icon: 'success',
-                iconColor: '#000',
+                iconColor: '#2563eb',
                 showConfirmButton: true,
-                confirmButtonText: 'View My Bookings',
+                confirmButtonText: 'Done',
                 confirmButtonColor: '#000',
                 customClass: {
-                    popup: 'rounded-[3rem] p-8 border-none shadow-2xl',
-                    confirmButton: 'rounded-2xl px-10 py-4 font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all'
+                    popup: 'rounded-[3rem] p-10 border-none shadow-2xl',
+                    confirmButton: 'rounded-2xl px-12 py-4 font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all w-full md:w-auto shadow-xl'
                 }
             });
 
-            navigate('/customer/bookings');
+            navigate('/customer/home');
         } catch (err) {
             setError(err.response?.data?.message || 'Error creating booking');
         } finally {
