@@ -158,7 +158,7 @@ const Cars = () => {
                                 >
                                     <div className="relative h-40 md:h-48 bg-gray-100 overflow-hidden">
                                         {car.images && car.images.length > 0 ? (
-                                            <img src={car.images[0]} alt={car.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            <img src={car.images[0]} alt={car.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 bg-gray-100/50" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                 <ImageIcon className="w-10 h-10" />

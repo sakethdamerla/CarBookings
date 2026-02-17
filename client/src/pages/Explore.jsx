@@ -81,7 +81,7 @@ const Explore = () => {
                             <img
                                 src={car.images && car.images.length > 0 ? car.images[0] : 'https://via.placeholder.com/300'}
                                 alt={car.name}
-                                className="w-full h-full object-cover drop-shadow-2xl transition-all duration-700 group-hover:scale-110"
+                                className="w-full h-full object-contain drop-shadow-2xl transition-all duration-700 group-hover:scale-110 bg-gray-50"
                             />
                         </div>
 

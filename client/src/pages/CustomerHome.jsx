@@ -137,76 +137,27 @@ const CustomerHome = () => {
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                        <div className="grid grid-cols-2 gap-4 md:gap-6">
                             {filteredCars.map(car => (
                                 <div
                                     key={car._id}
                                     onClick={() => navigate(`/car/${car._id}`)}
-                                    className="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 hover:shadow-2xl hover:border-blue-100 transition-all cursor-pointer group relative overflow-hidden flex flex-col"
+                                    className="bg-white rounded-3xl p-3 shadow-sm border border-gray-100 hover:shadow-xl transition-all cursor-pointer group flex flex-col"
                                 >
-                                    <div className="flex justify-between items-start mb-2 relative z-10">
-                                        <div className="bg-orange-50 text-orange-500 px-3 py-1.5 rounded-full flex items-center font-black text-[10px] md:text-xs uppercase tracking-tighter">
-                                            <Star className="w-3.5 h-3.5 fill-current mr-1" />
-                                            <span>4.9</span>
-                                        </div>
-                                        <button className="bg-white/80 p-2.5 rounded-2xl shadow-sm text-gray-200 hover:text-red-500 transition-all backdrop-blur-sm">
-                                            <Heart className="w-5 h-5" />
-                                        </button>
-                                    </div>
-
-                                    <div className="aspect-[16/9] mb-4 flex items-center justify-center relative z-10 rounded-2xl overflow-hidden">
+                                    <div className="aspect-[16/10] mb-3 flex items-center justify-center rounded-2xl overflow-hidden bg-gray-50">
                                         <img
                                             src={car.images && car.images.length > 0 ? car.images[0] : 'https://via.placeholder.com/300'}
                                             alt={car.name}
-                                            className="w-full h-full object-cover drop-shadow-2xl transition-all duration-700 group-hover:scale-110"
+                                            className="w-full h-full object-contain drop-shadow-xl transition-transform duration-700 group-hover:scale-110"
                                         />
                                     </div>
 
-                                    <div className="relative z-10 mt-auto">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div>
-                                                <div className="bg-gray-900 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest mb-2 inline-block">
-                                                    {car.type}
-                                                </div>
-                                                <h3 className="font-black text-gray-900 text-xl md:text-2xl tracking-tighter uppercase">{car.name}</h3>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-black font-black text-xl md:text-2xl tracking-tighter">₹{car.pricePer24h || 0}</div>
-                                                <div className="text-gray-400 text-[10px] font-bold uppercase tracking-widest -mt-1">/ 24h</div>
-                                            </div>
+                                    <div className="px-1 text-center">
+                                        <h3 className="font-black text-gray-900 text-sm md:text-base tracking-tighter uppercase line-clamp-1">{car.name}</h3>
+                                        <div className="mt-1">
+                                            <span className="text-blue-600 font-black text-base md:text-lg tracking-tighter">₹{car.pricePer24h || 0}</span>
+                                            <span className="text-gray-400 text-[8px] font-bold uppercase tracking-widest ml-1">/ 24h</span>
                                         </div>
-
-                                        <div className="flex items-center gap-4 mt-4 py-3 border-y border-gray-50">
-                                            <div className="flex items-center gap-2">
-                                                <div className="p-1.5 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
-                                                    <Settings2 className="w-3 h-3 md:w-3.5 md:h-3.5 text-gray-400 group-hover:text-blue-500" />
-                                                </div>
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">{car.transmission}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="p-1.5 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors">
-                                                    <Fuel className="w-3 h-3 md:w-3.5 md:h-3.5 text-gray-400 group-hover:text-blue-500" />
-                                                </div>
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">{car.fuelType}</span>
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                const storedGuest = localStorage.getItem('guestUser');
-                                                if (!storedGuest && !user) {
-                                                    setPendingNavCarId(car._id);
-                                                    setShowGuestModal(true);
-                                                } else {
-                                                    navigate(`/car/${car._id}`);
-                                                }
-                                            }}
-                                            className="w-full mt-4 py-3 md:py-4 bg-black text-white rounded-[1.25rem] font-black text-xs md:text-sm uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 overflow-hidden relative group/btn"
-                                        >
-                                            <span className="relative z-10">Book This Vehicle</span>
-                                            <div className="absolute inset-0 bg-blue-600 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                                        </button>
                                     </div>
                                 </div>
                             ))}

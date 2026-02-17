@@ -54,7 +54,7 @@ const CarDetails = () => {
                             <img
                                 src={car.images?.[0] || 'https://via.placeholder.com/600'}
                                 alt={car.name}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                             />
                         </div>
                     </div>
@@ -72,12 +72,22 @@ const CarDetails = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex gap-3 mb-8">
+                            <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex gap-3 mb-4">
                                 <Info className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
                                 <div className="space-y-1">
                                     <p className="text-xs font-black text-orange-700 uppercase tracking-tight">Pricing Notice</p>
                                     <p className="text-[10px] md:text-xs text-orange-600 font-medium leading-relaxed">
                                         The rate shown is for 24 hours. The final total amount will be calculated and provided by the admin after booking approval.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex gap-3 mb-8">
+                                <Compass className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                                <div className="space-y-1">
+                                    <p className="text-xs font-black text-blue-700 uppercase tracking-tight">Mileage Limit</p>
+                                    <p className="text-[10px] md:text-xs text-blue-600 font-medium leading-relaxed">
+                                        Includes <span className="font-bold">300 km</span> per day. Exceeding this limit will incur additional charges as per the extra kilometer rate.
                                     </p>
                                 </div>
                             </div>
