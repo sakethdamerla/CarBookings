@@ -56,9 +56,10 @@ const emitNotification = (userId, notification) => {
 
 const emitToAllStaff = (notification) => {
     if (!io) return;
-    // For now, we can emit to a room 'staff' if we stick users there, 
-    // but a simple broadcast for simplicity in this project
-    io.emit('admin_notification', notification);
+    // Broadcast restricted to prevent leaking data to all admins
+    // In a multi-tenant system, this should be room-based.
+    // For now, we rely on emitNotification for targeted updates.
+    console.warn('[SocketDebug] emitToAllStaff called but disabled for privacy');
 };
 
 module.exports = {

@@ -68,6 +68,9 @@ const getBookings = asyncHandler(async (req, res) => {
         } else if (req.user.role === 'superadmin' && req.query.ownerId) {
             query.owner = req.query.ownerId;
         }
+    } else if (!req.query.mobile) {
+        // If not authenticated and no mobile filter, return empty to prevent data leak
+        return res.json([]);
     }
     const bookings = await Booking.find(query)
         .populate('car', 'name model registrationNumber images pricePer24h transmission fuelType seats owner')
@@ -89,6 +92,9 @@ const getPendingBookings = asyncHandler(async (req, res) => {
         } else if (req.user.role === 'superadmin' && req.query.ownerId) {
             query.owner = req.query.ownerId;
         }
+    } else if (!req.query.mobile) {
+        // If not authenticated and no mobile filter, return empty to prevent data leak
+        return res.json([]);
     }
     const bookings = await Booking.find(query)
         .populate('car', 'name model registrationNumber')
@@ -219,40 +225,34 @@ const createBooking = asyncHandler(async (req, res) => {
     });
 
     if (booking) {
-        // Create notifications for Admins and Superadmins
-        const staff = await User.find({ role: { $in: ['admin', 'superadmin'] } });
-
-        const msg = `New booking received from ${customerName}`;
-        for (const member of staff) {
-            // Respect superadmin toggle if member is superadmin
-            if (member.role === 'superadmin' && !member.notificationsEnabled) continue;
-
+        // Create notification for the respective provider (owner)
+        if (booking.owner) {
+            const msg = `New booking received from ${customerName}`;
             const notification = await Notification.create({
-                recipient: member._id,
+                recipient: booking.owner,
                 message: msg,
                 type: 'booking_created',
                 bookingId: booking._id
             });
 
-            // Emit to admin via socket
-            emitNotification(member._id, notification);
-        }
+            // Emit to provider via socket
+            emitNotification(booking.owner, notification);
 
-        // Global staff/admin event for live dashboard updates
-        emitToAllStaff({
-            type: 'booking_created',
-            booking: await booking.populate('car', 'name model registrationNumber')
-        });
-
-        // Notify Admins
-        const admins = await User.find({ role: { $in: ['admin', 'superadmin'] } });
-        for (const admin of admins) {
+            // Send Push Notification
             await sendPushNotification(
-                admin._id,
+                booking.owner,
                 'New Booking Request',
                 `New booking from ${customerName} for ${carData?.name || 'Car'}.`,
                 '/admin/bookings'
             );
+        }
+
+        // Global staff/admin event for live dashboard updates - scoped to owner
+        if (booking.owner) {
+            emitNotification(booking.owner, {
+                type: 'booking_created',
+                booking: await booking.populate('car', 'name model registrationNumber')
+            });
         }
 
         res.status(201).json(booking);
