@@ -13,9 +13,9 @@ const announcementSettingsSchema = mongoose.Schema({
         type: Number,
         default: 1,
     },
-    postTime: {
-        type: String, // format "HH:mm"
-        default: "09:00",
+    postTimes: {
+        type: [String], // array of "HH:mm" strings
+        default: ["09:00"],
     },
     lastTriggered: {
         type: Date,

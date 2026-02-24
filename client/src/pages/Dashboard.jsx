@@ -16,7 +16,10 @@ const Dashboard = () => {
         queryKey: ['stats', ownerId],
         queryFn: async () => {
             const params = {};
-            if (ownerId) params.ownerId = ownerId;
+            // Only send ownerId param if user is superadmin and ownerId is selected
+            if (user?.role === 'superadmin' && ownerId) {
+                params.ownerId = ownerId;
+            }
             const { data } = await api.get('/stats', { params });
             return data;
         },
@@ -26,7 +29,10 @@ const Dashboard = () => {
         queryKey: ['pendingBookings', ownerId],
         queryFn: async () => {
             const params = {};
-            if (ownerId) params.ownerId = ownerId;
+            // Only send ownerId param if user is superadmin and ownerId is selected
+            if (user?.role === 'superadmin' && ownerId) {
+                params.ownerId = ownerId;
+            }
             const { data } = await api.get('/bookings/pending', { params });
             return data.slice(0, 5);
         },

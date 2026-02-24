@@ -16,6 +16,8 @@ const getStats = asyncHandler(async (req, res) => {
         }
     }
 
+    console.log(`[StatsDebug] Role: ${req.user?.role}, UserID: ${req.user?._id}, Query:`, query);
+
     const totalCars = await Car.countDocuments(query);
     const totalDrivers = await Driver.countDocuments(query);
     const totalBookings = await Booking.countDocuments(query);
@@ -26,12 +28,19 @@ const getStats = asyncHandler(async (req, res) => {
 
     // Get monthly bookings (simple aggregation)
     const pipeline = [];
+
+    // Always apply the base query to the aggregation if it exists
     if (Object.keys(query).length > 0) {
-        // Convert string ID to ObjectId for aggregate match if needed
         const matchQuery = { ...query };
-        if (matchQuery.owner && typeof matchQuery.owner === 'string') {
+        // Ensure owner is an ObjectId for MongoDB aggregation
+        if (matchQuery.owner) {
             const mongoose = require('mongoose');
-            matchQuery.owner = new mongoose.Types.ObjectId(matchQuery.owner);
+            if (typeof matchQuery.owner === 'string') {
+                matchQuery.owner = new mongoose.Types.ObjectId(matchQuery.owner);
+            } else if (matchQuery.owner instanceof mongoose.Types.ObjectId === false) {
+                // It might be a Mongoose document or something else, force to ObjectId
+                matchQuery.owner = new mongoose.Types.ObjectId(matchQuery.owner.toString());
+            }
         }
         pipeline.push({ $match: matchQuery });
     }
@@ -46,6 +55,7 @@ const getStats = asyncHandler(async (req, res) => {
         { $sort: { _id: 1 } }
     );
 
+    console.log(`[StatsDebug] Aggregation Pipeline:`, JSON.stringify(pipeline, null, 2));
     const monthlyBookings = await Booking.aggregate(pipeline);
 
     res.json({

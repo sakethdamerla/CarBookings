@@ -36,9 +36,33 @@ const queryClient = new QueryClient({
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
 
   return user ? children : <Navigate to="/login" />;
+};
+
+// Public Route Component - Redirects authenticated users
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+
+  if (user) {
+    if (user.role === 'admin' || user.role === 'superadmin') {
+      return <Navigate to="/admin" replace />;
+    }
+    return <Navigate to="/customer/home" replace />;
+  }
+
+  return children;
 };
 
 // Root Redirect Component
@@ -62,9 +86,9 @@ function App() {
         <Router>
           <Routes>
             {/* Public Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/admin/login" element={<Login />} />
-            <Route path="/customer/login" element={<CustomerLogin />} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/admin/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/customer/login" element={<PublicRoute><CustomerLogin /></PublicRoute>} />
 
             <Route path="/" element={<RootRedirect />} />
 
