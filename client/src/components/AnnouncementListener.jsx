@@ -23,38 +23,59 @@ const AnnouncementListener = () => {
         return () => clearInterval(interval);
     }, [fetchPublicSettings]);
 
+    const triggerNotification = useCallback((timeSlot = null) => {
+        const isTest = timeSlot === 'test';
+        if (!isTest && (!settings || !settings.isEnabled)) return;
+
+        // Use settings sentences or a default test message
+        const pool = (settings?.sentences?.length > 0) ? settings.sentences : ["Notifications are now enabled!"];
+        const perPopup = settings?.sentencesPerPopup || 1;
+
+        // Pick random sentences
+        const shuffled = [...pool].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, isTest ? 1 : perPopup);
+        const message = selected.join(' ');
+
+        try {
+            new Notification(isTest ? 'System Test' : 'System Announcement', {
+                body: message,
+                icon: '/logo192.png',
+            });
+        } catch (err) {
+            console.error('Notification trigger failed:', err);
+        }
+
+        if (!isTest && timeSlot) {
+            const today = new Date().toDateString();
+            setLastTriggeredSlots(prev => ({
+                ...prev,
+                [today]: [...(prev[today] || []), timeSlot]
+            }));
+        }
+    }, [settings]);
+
     const requestPermission = async () => {
-        const result = await Notification.requestPermission();
-        setPermission(result);
-        if (result === 'granted') {
+        try {
+            const result = await Notification.requestPermission();
+            setPermission(result);
+            setShowBanner(false);
+
+            if (result === 'granted') {
+                // Show immediate feedback
+                setTimeout(() => triggerNotification('test'), 1000);
+            } else if (result === 'denied') {
+                alert('Notifications are blocked by your browser settings. Please enable them in the address bar to receive updates.');
+            }
+        } catch (err) {
+            console.error('Permission request failed:', err);
             setShowBanner(false);
         }
     };
 
-    const triggerNotification = useCallback((timeSlot) => {
-        if (!settings || !settings.isEnabled || settings.sentences.length === 0) return;
-        if (permission !== 'granted') return;
-
-        // Pick random sentences
-        const shuffled = [...settings.sentences].sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, settings.sentencesPerPopup);
-        const message = selected.join(' ');
-
-        new Notification('System Announcement', {
-            body: message,
-            icon: '/logo192.png',
-        });
-
-        const today = new Date().toDateString();
-        setLastTriggeredSlots(prev => ({
-            ...prev,
-            [today]: [...(prev[today] || []), timeSlot]
-        }));
-    }, [settings, permission]);
-
     useEffect(() => {
         const checkTime = () => {
             if (!settings || !settings.isEnabled || !settings.postTimes || settings.postTimes.length === 0) return;
+            if (permission !== 'granted') return;
 
             const now = new Date();
             const today = now.toDateString();
