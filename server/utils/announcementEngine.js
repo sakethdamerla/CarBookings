@@ -37,7 +37,7 @@ const triggerAnnouncement = async (settings) => {
     const message = selected.join(' ');
 
     const payload = JSON.stringify({
-        title: 'Important Announcement',
+        title: 'Car Bookings',
         body: message,
         url: '/customer/home'
     });
@@ -60,7 +60,7 @@ const triggerSpecificAnnouncement = async (sentence) => {
     if (!sentence) return;
 
     const payload = JSON.stringify({
-        title: 'Important Announcement',
+        title: 'Car Bookings',
         body: sentence,
         url: '/customer/home'
     });
