@@ -47,7 +47,9 @@ export const subscribeToPush = async () => {
     } catch (error) {
         console.error('Push subscription process failed:', error);
         if (error.name === 'NotAllowedError') {
-            console.warn('User denied notification permission');
+            console.warn('User denied notification permission. Push notifications will be disabled for this session.');
+        } else {
+            console.error('Push subscription process failed:', error);
         }
     }
 };

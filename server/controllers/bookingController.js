@@ -1,6 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
+const Car = require('../models/Car');
+const Driver = require('../models/Driver');
 const Notification = require('../models/Notification');
 const { emitNotification, emitToAllStaff } = require('../utils/socketService');
 const webpush = require('web-push');
@@ -121,9 +123,12 @@ const createBooking = asyncHandler(async (req, res) => {
         throw new Error('End date must be after start date');
     }
 
+    let carData = null;
+    let driverData = null;
+
     // Check specific Car status
     if (car) {
-        const carData = await require('../models/Car').findById(car);
+        carData = await Car.findById(car);
         if (!carData) {
             res.status(404);
             throw new Error('Car not found');
@@ -149,6 +154,12 @@ const createBooking = asyncHandler(async (req, res) => {
 
     // Check for Driver Overlap
     if (driver) {
+        driverData = await Driver.findById(driver);
+        if (!driverData) {
+            res.status(404);
+            throw new Error('Driver not found');
+        }
+
         const driverConflict = await Booking.findOne({
             driver,
             status: { $nin: ['cancelled', 'rejected'] },
@@ -204,7 +215,7 @@ const createBooking = asyncHandler(async (req, res) => {
         pickupLocation,
         dropLocation,
         user: bookingUser,
-        owner: carData.owner
+        owner: carData ? carData.owner : (driverData ? driverData.owner : null)
     });
 
     if (booking) {
