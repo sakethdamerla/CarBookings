@@ -75,7 +75,7 @@ const getBookings = asyncHandler(async (req, res) => {
     const bookings = await Booking.find(query)
         .populate('car', 'name model registrationNumber images pricePer24h transmission fuelType seats owner')
         .populate('driver', 'name mobile licenseNumber')
-        .populate('owner', 'name')
+        .populate('owner', 'name username')
         .sort({ createdAt: -1 });
     res.json(bookings);
 });
@@ -99,7 +99,7 @@ const getPendingBookings = asyncHandler(async (req, res) => {
     const bookings = await Booking.find(query)
         .populate('car', 'name model registrationNumber')
         .populate('driver', 'name mobile licenseNumber')
-        .populate('owner', 'name')
+        .populate('owner', 'name username')
         .sort({ createdAt: -1 });
     res.json(bookings);
 });

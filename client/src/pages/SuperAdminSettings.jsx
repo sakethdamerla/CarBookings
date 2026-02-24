@@ -109,6 +109,19 @@ const SuperAdminSettings = () => {
         setAnnouncementSettings({ ...announcementSettings, postTimes: updated });
     };
 
+    const handleManualSend = async (sentence) => {
+        setLoading(true);
+        try {
+            await api.post('/announcements/trigger-specific', { sentence });
+            setMessage({ type: 'success', text: 'Notification sent instantly!' });
+            setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Failed to send notification' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="max-w-3xl mx-auto px-4 py-8 md:py-12 space-y-8 md:space-y-12 pb-24 animate-in fade-in duration-500">
             <div className="text-center md:text-left">
@@ -261,9 +274,18 @@ const SuperAdminSettings = () => {
                             {announcementSettings.sentences.map((s, idx) => (
                                 <div key={idx} className="p-4 bg-gray-50 rounded-xl flex items-center justify-between border border-transparent hover:border-gray-200 transition-all text-xs font-bold text-gray-700">
                                     <span className="truncate flex-1">{s}</span>
-                                    <button onClick={() => removeSentence(idx)} className="ml-4 text-gray-300 hover:text-red-500 transition-colors">
-                                        <Trash2 size={14} />
-                                    </button>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => handleManualSend(s)}
+                                            className="px-3 py-1.5 bg-black text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-1.5"
+                                        >
+                                            <Megaphone size={10} />
+                                            Send Now
+                                        </button>
+                                        <button onClick={() => removeSentence(idx)} className="text-gray-300 hover:text-red-500 transition-colors">
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

@@ -25,6 +25,7 @@ const authUser = asyncHandler(async (req, res) => {
         res.json({
             _id: user._id,
             name: user.name,
+            username: user.username,
             email: user.email,
             role: user.role,
             permissions: user.permissions,
@@ -60,6 +61,7 @@ const registerUser = asyncHandler(async (req, res) => {
         res.status(201).json({
             _id: user._id,
             name: user.name,
+            username: user.username,
             email: user.email,
             role: user.role,
             notificationsEnabled: user.notificationsEnabled,
@@ -81,6 +83,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
         res.json({
             _id: user._id,
             name: user.name,
+            username: user.username,
             email: user.email,
             role: user.role,
             permissions: user.permissions,
@@ -106,6 +109,7 @@ const createAdmin = asyncHandler(async (req, res) => {
 
     const user = await User.create({
         name,
+        username: req.body.username || '',
         email,
         password,
         role: 'admin',
@@ -116,6 +120,7 @@ const createAdmin = asyncHandler(async (req, res) => {
         res.status(201).json({
             _id: user._id,
             name: user.name,
+            username: user.username,
             email: user.email,
             role: user.role,
             permissions: user.permissions,
@@ -139,6 +144,7 @@ const updateAdminPermissions = asyncHandler(async (req, res) => {
         res.json({
             _id: updatedUser._id,
             name: updatedUser.name,
+            username: updatedUser.username,
             email: updatedUser.email,
             role: updatedUser.role,
             permissions: updatedUser.permissions,
@@ -158,6 +164,7 @@ const updateAdmin = asyncHandler(async (req, res) => {
     if (user && user.role === 'admin') {
         user.name = req.body.name || user.name;
         user.email = req.body.email || user.email;
+        user.username = req.body.username !== undefined ? req.body.username : user.username;
 
         if (req.body.password) {
             user.password = req.body.password;
@@ -172,6 +179,7 @@ const updateAdmin = asyncHandler(async (req, res) => {
         res.json({
             _id: updatedUser._id,
             name: updatedUser.name,
+            username: updatedUser.username,
             email: updatedUser.email,
             role: updatedUser.role,
             permissions: updatedUser.permissions,
@@ -248,6 +256,7 @@ const loginWithMobile = asyncHandler(async (req, res) => {
         res.json({
             _id: user._id,
             name: user.name,
+            username: user.username,
             mobile: user.mobile,
             role: user.role,
             permissions: user.permissions,

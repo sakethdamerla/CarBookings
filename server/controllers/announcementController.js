@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const AnnouncementSettings = require('../models/AnnouncementSettings');
+const { triggerAnnouncement, triggerSpecificAnnouncement } = require('../utils/announcementEngine');
 
 // @desc    Get announcement settings
 // @route   GET /api/announcements/settings
@@ -40,8 +41,36 @@ const getPublicAnnouncementSettings = asyncHandler(async (req, res) => {
     res.json(settings || { isEnabled: false });
 });
 
+// @desc    Trigger announcement manually (for testing)
+// @route   POST /api/announcements/trigger
+// @access  Private/Admin
+const manualTriggerAnnouncement = asyncHandler(async (req, res) => {
+    const settings = await AnnouncementSettings.findOne();
+    if (!settings) {
+        res.status(404);
+        throw new Error('Announcement settings not found');
+    }
+    await triggerAnnouncement(settings);
+    res.json({ message: 'Announcement triggered manually' });
+});
+
+// @desc    Trigger specific announcement manually
+// @route   POST /api/announcements/trigger-specific
+// @access  Private/Admin
+const manualTriggerSpecificAnnouncement = asyncHandler(async (req, res) => {
+    const { sentence } = req.body;
+    if (!sentence) {
+        res.status(400);
+        throw new Error('Sentence is required');
+    }
+    await triggerSpecificAnnouncement(sentence);
+    res.json({ message: 'Specific announcement triggered manually' });
+});
+
 module.exports = {
     getAnnouncementSettings,
     updateAnnouncementSettings,
-    getPublicAnnouncementSettings
+    getPublicAnnouncementSettings,
+    manualTriggerAnnouncement,
+    manualTriggerSpecificAnnouncement
 };

@@ -4,6 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const http = require('http');
 const { initSocket } = require('./utils/socketService');
+const { startAnnouncementEngine } = require('./utils/announcementEngine');
 
 // Load env vars
 dotenv.config();
@@ -16,6 +17,7 @@ const server = http.createServer(app);
 
 // Init Socket.io
 initSocket(server);
+startAnnouncementEngine();
 const authRoutes = require('./routes/authRoutes');
 const carRoutes = require('./routes/carRoutes');
 const driverRoutes = require('./routes/driverRoutes');
