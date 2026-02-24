@@ -17,19 +17,22 @@ const getAnnouncementSettings = asyncHandler(async (req, res) => {
 // @route   PUT /api/announcements/settings
 // @access  Private/Admin
 const updateAnnouncementSettings = asyncHandler(async (req, res) => {
-    const { isEnabled, sentences, sentencesPerPopup, postTimes } = req.body;
-
     let settings = await AnnouncementSettings.findOne();
+
     if (!settings) {
-        settings = await AnnouncementSettings.create(req.body);
+        settings = new AnnouncementSettings(req.body);
     } else {
-        settings.isEnabled = isEnabled ?? settings.isEnabled;
-        settings.sentences = sentences ?? settings.sentences;
-        settings.sentencesPerPopup = sentencesPerPopup ?? settings.sentencesPerPopup;
-        settings.postTimes = postTimes ?? settings.postTimes;
-        await settings.save();
+        if (req.body.isEnabled !== undefined) settings.isEnabled = req.body.isEnabled;
+        if (req.body.sentences !== undefined) settings.sentences = req.body.sentences;
+        if (req.body.sentencesPerPopup !== undefined) settings.sentencesPerPopup = req.body.sentencesPerPopup;
+        if (req.body.postTimes !== undefined) settings.postTimes = req.body.postTimes;
     }
 
+    // Ensure array changes are tracked
+    if (req.body.sentences) settings.markModified('sentences');
+    if (req.body.postTimes) settings.markModified('postTimes');
+
+    await settings.save();
     res.json(settings);
 });
 

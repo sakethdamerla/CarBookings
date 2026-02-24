@@ -82,18 +82,49 @@ const SuperAdminSettings = () => {
         }
     };
 
-    const addSentence = () => {
+    const addSentence = async () => {
         if (!newSentence.trim()) return;
-        setAnnouncementSettings({
-            ...announcementSettings,
-            sentences: [...announcementSettings.sentences, newSentence.trim()]
-        });
+        const sentenceToAdd = newSentence.trim();
+        const updatedSentences = [...announcementSettings.sentences, sentenceToAdd];
+
+        // Update local state
+        setAnnouncementSettings(prev => ({
+            ...prev,
+            sentences: updatedSentences
+        }));
         setNewSentence('');
+
+        // Persist to database
+        try {
+            await api.put('/announcements/settings', {
+                ...announcementSettings,
+                sentences: updatedSentences
+            });
+        } catch (error) {
+            console.error('Failed to auto-save sentence:', error);
+            setMessage({ type: 'error', text: 'Cloud sync failed' });
+        }
     };
 
-    const removeSentence = (index) => {
-        const updated = announcementSettings.sentences.filter((_, i) => i !== index);
-        setAnnouncementSettings({ ...announcementSettings, sentences: updated });
+    const removeSentence = async (index) => {
+        const updatedSentences = announcementSettings.sentences.filter((_, i) => i !== index);
+
+        // Update local state
+        setAnnouncementSettings(prev => ({
+            ...prev,
+            sentences: updatedSentences
+        }));
+
+        // Persist to database
+        try {
+            await api.put('/announcements/settings', {
+                ...announcementSettings,
+                sentences: updatedSentences
+            });
+        } catch (error) {
+            console.error('Failed to auto-save sentence removal:', error);
+            setMessage({ type: 'error', text: 'Cloud sync failed' });
+        }
     };
 
     const addTime = () => {
