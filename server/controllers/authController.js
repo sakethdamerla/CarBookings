@@ -149,6 +149,54 @@ const updateAdminPermissions = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Update admin details
+// @route   PUT /api/auth/admins/:id
+// @access  Private (SuperAdmin)
+const updateAdmin = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
+
+    if (user && user.role === 'admin') {
+        user.name = req.body.name || user.name;
+        user.email = req.body.email || user.email;
+
+        if (req.body.password) {
+            user.password = req.body.password;
+        }
+
+        if (req.body.permissions) {
+            user.permissions = req.body.permissions;
+        }
+
+        const updatedUser = await user.save();
+
+        res.json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            permissions: updatedUser.permissions,
+        });
+    } else {
+        res.status(404);
+        throw new Error('Admin not found');
+    }
+});
+
+// @desc    Delete admin
+// @route   DELETE /api/auth/admins/:id
+// @access  Private (SuperAdmin)
+const deleteAdmin = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id);
+
+    if (user && user.role === 'admin') {
+        await User.deleteOne({ _id: user._id });
+        res.json({ message: 'Admin removed' });
+    } else {
+        res.status(404);
+        throw new Error('Admin not found');
+    }
+});
+
 // @desc    Get all admins
 // @route   GET /api/auth/admins
 // @access  Private (SuperAdmin)
@@ -219,6 +267,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
 
     if (user) {
         user.name = req.body.name || user.name;
+        user.username = req.body.username !== undefined ? req.body.username : user.username;
         user.email = req.body.email || user.email;
         user.mobile = req.body.mobile || user.mobile;
 
@@ -235,6 +284,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
         res.json({
             _id: updatedUser._id,
             name: updatedUser.name,
+            username: updatedUser.username,
             email: updatedUser.email,
             mobile: updatedUser.mobile,
             role: updatedUser.role,
@@ -248,4 +298,4 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { authUser, registerUser, getUserProfile, createAdmin, getAdmins, loginWithMobile, updateAdminPermissions, updateUserProfile };
+module.exports = { authUser, registerUser, getUserProfile, createAdmin, getAdmins, loginWithMobile, updateAdminPermissions, updateUserProfile, updateAdmin, deleteAdmin };

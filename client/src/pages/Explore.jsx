@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Search, Star, Heart, Fuel, Settings2 } from 'lucide-react';
+import { ArrowLeft, Search, Star, Heart, Fuel, Settings2, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
@@ -96,6 +96,22 @@ const Explore = () => {
                                 <div className="text-right">
                                     <div className="text-black font-black text-xl md:text-2xl tracking-tighter">₹{car.pricePer24h || 0}</div>
                                     <div className="text-gray-400 text-[10px] font-bold uppercase tracking-widest -mt-1">/ 24h</div>
+                                </div>
+                            </div>
+
+                            <div className="mb-4 flex items-center gap-2">
+                                <div className="w-4 h-4 bg-black rounded-lg flex items-center justify-center text-[7px] font-black text-white shrink-0">
+                                    {car.owner?.name?.charAt(0) || 'P'}
+                                </div>
+                                <div className="flex items-center gap-2 overflow-hidden">
+                                    <span className="text-[9px] font-black text-gray-900 uppercase tracking-widest whitespace-nowrap truncate">
+                                        {car.owner?.username || car.owner?.name || 'Official'}
+                                    </span>
+                                    {car.owner?.mobile && (
+                                        <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest whitespace-nowrap">
+                                            • {car.owner.mobile}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 

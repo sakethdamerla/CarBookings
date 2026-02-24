@@ -130,7 +130,7 @@ const CustomerBookings = () => {
 
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 {bookings.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {bookings.map((booking) => {
                             const createdAt = new Date(booking.createdAt);
                             const diffMs = (10 * 60 * 1000) - (now - createdAt);
@@ -139,86 +139,123 @@ const CustomerBookings = () => {
                             const seconds = Math.floor((diffMs % 60000) / 1000);
 
                             return (
-                                <div key={booking._id} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 relative overflow-hidden flex flex-col hover:shadow-xl transition-all group">
-                                    {canCancel && (
-                                        <div className="absolute top-0 right-0 left-0 h-1.5 bg-gray-50">
-                                            <div
-                                                className="h-full bg-black transition-all duration-1000"
-                                                style={{ width: `${(diffMs / (10 * 60 * 1000)) * 100}%` }}
-                                            ></div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-black group-hover:bg-blue-50 transition-colors">
-                                                <Car className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-black text-gray-900 text-lg md:text-xl uppercase tracking-tighter leading-none mb-1">{booking.car?.name}</h3>
-                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{booking.car?.model}</p>
-                                            </div>
-                                        </div>
-                                        <span className={`text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-widest ${getStatusColor(booking.status)}`}>
+                                <div key={booking._id} className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl transition-all group flex flex-col overflow-hidden relative">
+                                    {/* Status & Cancellation Overlay */}
+                                    <div className="absolute top-4 right-4 z-10">
+                                        <span className={`text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-widest font-black shadow-sm ${getStatusColor(booking.status)}`}>
                                             {booking.status === 'confirmed' ? 'confirmed' : (booking.status === 'approved' ? 'confirmed' : booking.status)}
                                         </span>
                                     </div>
 
-                                    <div className="space-y-4 mt-auto">
-                                        <div className="bg-gray-50 p-4 rounded-2xl space-y-3">
-                                            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-                                                <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                    Booking Type
+                                    {/* Top Section: Car Info */}
+                                    <div className="p-6 pb-0 flex items-center gap-4">
+                                        <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-black group-hover:bg-blue-50 transition-colors border border-gray-100">
+                                            <Car className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-black text-gray-900 text-lg uppercase tracking-tighter leading-none mb-1">{booking.car?.name}</h3>
+                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{booking.car?.model}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Middle Section: Booking Details */}
+                                    <div className="p-6 space-y-4">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Duration</p>
+                                                <div className="flex items-center gap-1.5 font-black text-gray-900 text-xs">
+                                                    <Clock size={12} className="text-blue-500" />
+                                                    {(() => {
+                                                        const start = getIST(booking.startDate);
+                                                        const end = getIST(booking.endDate);
+                                                        const duration = moment.duration(end.diff(start));
+                                                        const days = Math.floor(duration.asDays());
+                                                        const hours = duration.hours();
+                                                        return `${days > 0 ? `${days}d ` : ''}${hours}h`;
+                                                    })()}
                                                 </div>
-                                                <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${booking.bookingType === 'car_with_driver' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                                                    {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
-                                                </span>
                                             </div>
+                                            <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Type</p>
+                                                <div className="flex items-center gap-1.5 font-black text-gray-900 text-[10px] uppercase">
+                                                    <span className={booking.bookingType === 'car_with_driver' ? 'text-blue-600' : 'text-gray-500'}>
+                                                        {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3 bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                    <Calendar size={12} />
+                                                    <Calendar size={12} className="text-gray-300" />
                                                     Pickup
                                                 </div>
-                                                <span className="text-xs font-black text-gray-900">
-                                                    {formatIST(booking.startDate)}
+                                                <span className="text-[11px] font-black text-gray-900 uppercase">
+                                                    {formatIST(booking.startDate, 'DD MMM, HH:mm')}
                                                 </span>
                                             </div>
-                                            <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+                                            <div className="h-[1px] bg-gray-50 w-full"></div>
+                                            <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                    <Calendar size={12} />
+                                                    <Calendar size={12} className="text-gray-300" />
                                                     Dropoff
                                                 </div>
-                                                <span className="text-xs font-black text-gray-900">
-                                                    {formatIST(booking.endDate)}
+                                                <span className="text-[11px] font-black text-gray-900 uppercase">
+                                                    {formatIST(booking.endDate, 'DD MMM, HH:mm')}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-between items-end pt-2">
-                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Amount</div>
-                                            <span className={`font-black tracking-tighter ${!booking.totalAmount ? 'text-orange-500 text-xs text-right italic' : 'text-2xl text-gray-900'}`}>
-                                                {booking.totalAmount ? `₹${booking.totalAmount}` : 'Admin will update rate'}
+                                        <div className="flex items-center gap-2 px-2">
+                                            <div className="w-6 h-6 bg-black rounded-lg flex items-center justify-center text-[8px] font-black text-white">
+                                                {booking.owner?.name?.charAt(0) || 'P'}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                Provided by: <span className="text-gray-900">{booking.owner?.username || booking.owner?.name || 'Official Provider'}</span>
                                             </span>
                                         </div>
 
-                                        {canCancel && (
-                                            <div className="mt-6 pt-4 border-t border-gray-50 flex flex-col gap-4">
-                                                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-black/40">
+                                        <div className="h-[1px] bg-gray-50 w-full my-1"></div>
+
+                                        <div className="flex justify-between items-center px-2">
+                                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount Paid</div>
+                                            <span className={`font-black tracking-tighter ${!booking.totalAmount ? 'text-orange-500 text-xs italic' : 'text-2xl text-gray-900'}`}>
+                                                {booking.totalAmount ? `₹${booking.totalAmount}` : 'Awaiting Rate'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Section */}
+                                    {canCancel && (
+                                        <div className="mt-auto p-6 pt-0">
+                                            <div className="bg-gray-900 rounded-3xl p-5 space-y-4 shadow-lg">
+                                                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
                                                     <span>Action window</span>
-                                                    <span className="flex items-center gap-1.5 text-black">
+                                                    <span className="flex items-center gap-1.5 text-white bg-white/10 px-3 py-1 rounded-full border border-white/5">
                                                         <Clock className="w-3.5 h-3.5" />
                                                         {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
                                                     </span>
                                                 </div>
                                                 <button
                                                     onClick={() => handleCancel(booking._id)}
-                                                    className="w-full py-4 bg-red-50 text-red-600 rounded-xl text-xs font-black uppercase tracking-widest border border-red-50 hover:bg-red-100 hover:border-red-200 transition-all active:scale-95"
+                                                    className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-95 shadow-xl"
                                                 >
-                                                    Cancel Booking
+                                                    Cancel My Booking
                                                 </button>
                                             </div>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
+
+                                    {/* Progress Bar for Cancellation */}
+                                    {canCancel && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-100">
+                                            <div
+                                                className="h-full bg-red-500 transition-all duration-1000"
+                                                style={{ width: `${(diffMs / (10 * 60 * 1000)) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}

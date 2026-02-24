@@ -158,6 +158,15 @@ const CustomerHome = () => {
                                             <span className="text-blue-600 font-black text-base md:text-lg tracking-tighter">₹{car.pricePer24h || 0}</span>
                                             <span className="text-gray-400 text-[8px] font-bold uppercase tracking-widest ml-1">/ 24h</span>
                                         </div>
+                                        <div className="mt-3 flex items-center justify-center gap-2 px-1">
+                                            <div className="w-4 h-4 bg-black rounded-lg flex items-center justify-center text-[6px] font-black text-white shrink-0">
+                                                {car.owner?.name?.charAt(0) || 'P'}
+                                            </div>
+                                            <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis">
+                                                <span className="text-gray-900">{car.owner?.username || car.owner?.name || 'Official'}</span>
+                                                {car.owner?.mobile && <span className="text-gray-400 ml-1.5">• {car.owner.mobile}</span>}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

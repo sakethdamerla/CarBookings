@@ -8,11 +8,11 @@ const {
     cancelBooking,
     getCarAvailability,
 } = require('../controllers/bookingController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, optionalProtect } = require('../middleware/authMiddleware');
 
-router.route('/').get(getBookings).post(createBooking);
+router.route('/').get(optionalProtect, getBookings).post(protect, createBooking);
 router.route('/pending').get(protect, getPendingBookings);
-router.route('/:id/cancel').post(cancelBooking);
+router.route('/:id/cancel').post(protect, cancelBooking);
 router.route('/car/:id/availability').get(getCarAvailability);
 router.route('/:id').put(protect, updateBooking);
 

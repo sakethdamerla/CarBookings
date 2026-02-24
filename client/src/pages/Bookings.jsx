@@ -1,33 +1,55 @@
-import { useEffect, useState, useCallback } from 'react';
-import api from '../utils/api';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { Plus, List, Calendar as CalendarIcon, Clock, User, Car as CarIcon, AlertCircle, Loader2, X, MapPin } from 'lucide-react';
-import BookingForm from '../components/BookingForm';
+import {
+    Calendar as CalendarIcon,
+    List,
+    Plus,
+    Search,
+    Filter,
+    Car as CarIcon,
+    User,
+    Phone,
+    Clock,
+    ArrowUpRight,
+    Check,
+    X,
+    ChevronLeft,
+    ChevronRight,
+    Loader2,
+    MapPin
+} from 'lucide-react';
+import api from '../utils/api';
 import { formatIST, getIST } from '../utils/dateUtils';
+import AdminFilter from '../components/AdminFilter';
+import AuthContext from '../context/AuthContext';
 
 const localizer = momentLocalizer(moment);
 
 const Bookings = () => {
+    const { user } = useContext(AuthContext);
+    const [ownerId, setOwnerId] = useState(null);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState('calendar'); // 'list' or 'calendar'
     const [showForm, setShowForm] = useState(false);
     const [selectedDateBookings, setSelectedDateBookings] = useState(null);
     const [actionLoading, setActionLoading] = useState(null); // Track specific booking ID being updated
+    const [extraChargeModal, setExtraChargeModal] = useState(null); // Stores the booking object
+    const [extraChargeData, setExtraChargeData] = useState({ kms: '', pricePerKm: '' });
 
     const fetchBookings = useCallback(async () => {
         try {
             setLoading(true);
-            const { data } = await api.get('/bookings');
+            const { data } = await api.get('/bookings', { params: { ownerId } });
             setBookings(data);
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [ownerId]);
 
     useEffect(() => {
         fetchBookings();
@@ -102,34 +124,65 @@ const Bookings = () => {
         }
     };
 
+    const handleExtraCharges = async () => {
+        if (!extraChargeModal || !extraChargeData.kms || !extraChargeData.pricePerKm) return;
+
+        const extraAmount = parseFloat(extraChargeData.kms) * parseFloat(extraChargeData.pricePerKm);
+        const newTotal = (extraChargeModal.totalAmount || 0) + extraAmount;
+
+        try {
+            setActionLoading(extraChargeModal._id);
+            await api.put(`/bookings/${extraChargeModal._id}`, { totalAmount: newTotal });
+
+            // Refresh and close modals
+            fetchBookings();
+            setExtraChargeModal(null);
+            setExtraChargeData({ kms: '', pricePerKm: '' });
+            setSelectedDateBookings(null);
+        } catch (error) {
+            console.error('Failed to add extra charges:', error);
+            alert("Failed to add extra charges");
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     return (
         <div className="space-y-6">
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Booking Management</h2>
-                    <p className="text-gray-500">Schedule and track vehicle reservations</p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="bg-white p-1 rounded-xl shadow-sm border border-gray-200 flex">
-                        <button
-                            onClick={() => setView('calendar')}
-                            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg flex items-center justify-center transition-all ${view === 'calendar' ? 'bg-purple-100 text-purple-700 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
-                        >
-                            <CalendarIcon className="w-4 h-4 mr-2" /> Calendar
-                        </button>
-                        <button
-                            onClick={() => setView('list')}
-                            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg flex items-center justify-center transition-all ${view === 'list' ? 'bg-purple-100 text-purple-700 font-medium' : 'text-gray-500 hover:bg-gray-50'}`}
-                        >
-                            <List className="w-4 h-4 mr-2" /> List View
-                        </button>
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">Booking Management</h2>
+                        <p className="text-sm text-gray-500 font-medium">Schedule and track vehicle reservations</p>
                     </div>
                     <button
                         onClick={() => setShowForm(true)}
-                        className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all text-sm font-semibold flex items-center justify-center"
+                        className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl shadow-lg shadow-purple-200 hover:shadow-xl transform hover:-translate-y-0.5 transition-all text-sm font-bold flex items-center justify-center"
                     >
                         <Plus className="w-5 h-5 mr-2" /> New Booking
                     </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-gray-50/50 p-2 rounded-[2rem] border border-gray-100">
+                    <div className="flex-1">
+                        {user?.role === 'superadmin' && (
+                            <AdminFilter onFilterChange={setOwnerId} selectedAdminId={ownerId} />
+                        )}
+                    </div>
+                    <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-gray-200 flex">
+                        <button
+                            onClick={() => setView('calendar')}
+                            className={`flex-1 px-4 py-2 rounded-xl flex items-center justify-center transition-all text-xs font-bold uppercase tracking-widest ${view === 'calendar' ? 'bg-black text-white shadow-md' : 'text-gray-400 hover:bg-gray-50'}`}
+                        >
+                            <CalendarIcon className="w-3.5 h-3.5 mr-2" /> Calendar
+                        </button>
+                        <button
+                            onClick={() => setView('list')}
+                            className={`flex-1 px-4 py-2 rounded-xl flex items-center justify-center transition-all text-xs font-bold uppercase tracking-widest ${view === 'list' ? 'bg-black text-white shadow-md' : 'text-gray-400 hover:bg-gray-50'}`}
+                        >
+                            <List className="w-3.5 h-3.5 mr-2" /> List View
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -161,17 +214,23 @@ const Bookings = () => {
                                             </div>
                                         </div>
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                            booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                                            booking.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                                booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                                             }`}>
                                             {booking.status}
                                         </span>
                                     </div>
-                                    <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                         <div className="bg-white p-3 rounded-lg border border-gray-100">
-                                            <p className="text-xs text-gray-500 mb-1">Vehicle & Driver</p>
+                                            <p className="text-xs text-gray-500 mb-2 flex justify-between items-center">
+                                                <span>Vehicle & Driver</span>
+                                                <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${booking.bookingType === 'car_with_driver' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                                    {booking.bookingType === 'car_with_driver' ? 'With Driver' : 'Car Only'}
+                                                </span>
+                                            </p>
                                             <div className="space-y-1">
-                                                {booking.car && <div className="flex items-center text-gray-700"><CarIcon className="w-3 h-3 mr-2 text-blue-500" /> {booking.car.name}</div>}
-                                                {booking.driver && <div className="flex items-center text-gray-700"><User className="w-3 h-3 mr-2 text-green-500" /> {booking.driver.name}</div>}
+                                                {booking.car && <div className="flex items-center text-gray-700 font-medium"><CarIcon className="w-3.5 h-3.5 mr-2 text-blue-500" /> {booking.car.name}</div>}
+                                                {booking.driver && <div className="flex items-center text-gray-700 font-medium"><User className="w-3.5 h-3.5 mr-2 text-green-500" /> {booking.driver.name}</div>}
                                                 {!booking.car && !booking.driver && <span className="text-gray-400 italic">No resources assigned</span>}
                                             </div>
                                         </div>
@@ -190,9 +249,9 @@ const Bookings = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="bg-white p-3 rounded-lg border border-gray-100 col-span-2">
+                                        <div className="bg-white p-3 rounded-lg border border-gray-100 md:col-span-2">
                                             <p className="text-xs text-gray-500 mb-1">Schedule & Timestamps</p>
-                                            <div className="grid grid-cols-2 gap-4 text-[10px] md:text-xs">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] md:text-xs">
                                                 <div className="flex items-start text-gray-700">
                                                     <Clock className="w-3 h-3 mr-2 text-blue-500 mt-0.5" />
                                                     <div>
@@ -235,24 +294,47 @@ const Bookings = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-end gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                            {booking.status === 'confirmed' ? 'Reservation Finalized' : 'Awaiting Approval'}
-                                        </div>
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex flex-wrap justify-end gap-2">
                                             {booking.status === 'pending' && (
+                                                <button
+                                                    onClick={() => handleStatusUpdate(booking._id, 'confirmed', booking.totalAmount)}
+                                                    disabled={actionLoading === booking._id}
+                                                    className="px-6 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-800 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2"
+                                                >
+                                                    {actionLoading === booking._id ? (
+                                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                                    ) : (
+                                                        'Approve Reservation'
+                                                    )}
+                                                </button>
+                                            )}
+
+                                            {booking.status === 'confirmed' && (
                                                 <>
                                                     <button
-                                                        onClick={() => handleStatusUpdate(booking._id, 'confirmed', booking.totalAmount)}
+                                                        onClick={() => setExtraChargeModal(booking)}
+                                                        className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                                    >
+                                                        Extra Charges
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleStatusUpdate(booking._id, 'completed', booking.totalAmount)}
                                                         disabled={actionLoading === booking._id}
-                                                        className="px-6 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-800 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2"
+                                                        className="px-6 py-2 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2"
                                                     >
                                                         {actionLoading === booking._id ? (
                                                             <Loader2 className="w-3 h-3 animate-spin" />
                                                         ) : (
-                                                            'Approve Reservation'
+                                                            'Mark Completed'
                                                         )}
                                                     </button>
                                                 </>
+                                            )}
+
+                                            {booking.status === 'completed' && (
+                                                <div className="text-[10px] font-black uppercase tracking-widest text-blue-600 flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                                    <Check className="w-3 h-3" /> Job Completed
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -263,27 +345,88 @@ const Bookings = () => {
                 </div>
             )}
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[600px] p-2 md:p-6">
+            {/* Extra Charges Modal */}
+            {extraChargeModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-in zoom-in duration-200">
+                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm p-8">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                                <Plus className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Extra Charges</h3>
+                            <p className="text-sm text-gray-500 font-medium lowercase italic">Calculate additional costs based on KMs</p>
+                        </div>
+
+                        <div className="space-y-4 mb-8">
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Extra KMs Driven</label>
+                                <input
+                                    type="number"
+                                    placeholder="Enter KMs (e.g. 50)"
+                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-900 placeholder:text-gray-300 transition-all"
+                                    value={extraChargeData.kms}
+                                    onChange={(e) => setExtraChargeData({ ...extraChargeData, kms: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Price per KM (₹)</label>
+                                <input
+                                    type="number"
+                                    placeholder="Enter Price (e.g. 15)"
+                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-900 placeholder:text-gray-300 transition-all"
+                                    value={extraChargeData.pricePerKm}
+                                    onChange={(e) => setExtraChargeData({ ...extraChargeData, pricePerKm: e.target.value })}
+                                />
+                            </div>
+
+                            {extraChargeData.kms && extraChargeData.pricePerKm && (
+                                <div className="p-4 bg-green-50 rounded-2xl border border-green-100 flex items-center justify-between">
+                                    <span className="text-xs font-bold text-green-700 uppercase tracking-tight">Additional:</span>
+                                    <span className="text-lg font-black text-green-800">₹{(parseFloat(extraChargeData.kms) * parseFloat(extraChargeData.pricePerKm)).toLocaleString()}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={() => setExtraChargeModal(null)}
+                                className="py-4 bg-gray-50 text-gray-400 text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition-all active:scale-95"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleExtraCharges}
+                                disabled={actionLoading || !extraChargeData.kms || !extraChargeData.pricePerKm}
+                                className="py-4 bg-blue-600 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200 disabled:opacity-50 flex items-center justify-center"
+                            >
+                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply Charges'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="bg-white rounded-[2.5rem] shadow-xl shadow-gray-100 border border-gray-100 overflow-hidden min-h-[500px] p-2 md:p-8">
                 {loading ? (
-                    <div className="flex justify-center items-center h-[600px]">
-                        <Loader2 className="w-10 h-10 text-purple-600 animate-spin" />
+                    <div className="flex justify-center items-center h-[500px]">
+                        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
                     </div>
                 ) : view === 'calendar' ? (
-                    <div className="h-[500px] md:h-[700px] booking-calendar text-xs md:text-sm">
-                        <Calendar
+                    <div className="h-[450px] md:h-[750px] booking-calendar text-[10px] md:text-sm">
+                        <BigCalendar
                             localizer={localizer}
                             events={calendarEvents}
                             startAccessor="start"
                             endAccessor="end"
                             style={{ height: '100%', fontFamily: 'inherit' }}
                             eventPropGetter={(event) => {
-                                let bgColor = '#8b5cf6'; // default purple
+                                let bgColor = '#3b82f6'; // blue
                                 if (event.resource.bookingType === 'driver_only') bgColor = '#10b981'; // green
-                                if (event.resource.bookingType === 'car_only') bgColor = '#3b82f6'; // blue
+                                if (event.resource.status === 'completed') bgColor = '#6366f1'; // indigo
                                 if (event.resource.status === 'cancelled') bgColor = '#ef4444'; // red
 
                                 return {
-                                    className: 'rounded-md border-0 shadow-sm opacity-90 hover:opacity-100 transition-opacity',
+                                    className: 'rounded-lg border-0 shadow-sm opacity-90 hover:opacity-100 transition-all hover:scale-[1.02]',
                                     style: { backgroundColor: bgColor }
                                 };
                             }}
@@ -294,9 +437,9 @@ const Bookings = () => {
                             defaultView="month"
                             components={{
                                 event: ({ event }) => (
-                                    <div className="flex flex-col gap-0.5 p-0.5 overflow-hidden">
-                                        <span className="font-semibold truncate">{event.resource.customerName}</span>
-                                        <span className="text-[8px] md:text-[10px] opacity-90 truncate">{formatIST(event.start, 'HH:mm')}</span>
+                                    <div className="flex flex-col gap-0.5 p-1 overflow-hidden leading-tight">
+                                        <span className="font-bold truncate text-[8px] md:text-[10px] uppercase tracking-tighter">{event.resource.customerName}</span>
+                                        <span className="text-[7px] md:text-[8px] opacity-80 truncate font-medium">{formatIST(event.start, 'HH:mm')}</span>
                                     </div>
                                 )
                             }}
@@ -418,7 +561,7 @@ const Bookings = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

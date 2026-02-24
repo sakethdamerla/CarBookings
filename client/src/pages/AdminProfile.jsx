@@ -7,6 +7,7 @@ const AdminProfile = () => {
     const { user, login } = useContext(AuthContext);
     const [formData, setFormData] = useState({
         name: user?.name || '',
+        username: user?.username || '',
         email: user?.email || '',
         mobile: user?.mobile || '',
         password: '',
@@ -33,6 +34,7 @@ const AdminProfile = () => {
         try {
             const { data } = await api.put('/auth/profile', {
                 name: formData.name,
+                username: formData.username,
                 email: formData.email,
                 mobile: formData.mobile,
                 password: formData.password || undefined
@@ -87,6 +89,21 @@ const AdminProfile = () => {
                                     placeholder="Enter your name"
                                     required
                                 />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <AlertCircle className="w-4 h-4 text-purple-400" /> Business Name (Public)
+                                </label>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    className="w-full p-3 bg-white border-2 border-purple-100 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all font-bold text-purple-700"
+                                    placeholder="e.g. Royal Car Rentals"
+                                />
+                                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider ml-1">This name will be shown to customers as the provider</p>
                             </div>
 
                             <div className="space-y-2">

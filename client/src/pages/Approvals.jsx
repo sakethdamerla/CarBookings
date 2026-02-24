@@ -1,9 +1,20 @@
-import { useEffect, useState, useCallback, useContext } from 'react';
-import api from '../utils/api';
-import { Check, X, Calendar, User, Truck, Phone, AlertCircle, Loader2, Clock, DollarSign, MapPin } from 'lucide-react';
-import AuthContext from '../context/AuthContext';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import moment from 'moment';
+import {
+    Check,
+    X,
+    Calendar,
+    MapPin,
+    DollarSign,
+    Loader2,
+    User,
+    Truck,
+    AlertCircle
+} from 'lucide-react';
+import api from '../utils/api';
 import { formatIST, getIST } from '../utils/dateUtils';
+import AdminFilter from '../components/AdminFilter';
+import AuthContext from '../context/AuthContext';
 
 const ApprovalModal = ({ booking, onConfirm, onCancel, loading }) => {
     const [rate, setRate] = useState('');
@@ -119,6 +130,7 @@ const ApprovalModal = ({ booking, onConfirm, onCancel, loading }) => {
 
 const Approvals = () => {
     const { user } = useContext(AuthContext);
+    const [ownerId, setOwnerId] = useState(null);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(null);
@@ -126,14 +138,14 @@ const Approvals = () => {
 
     const fetchPendingBookings = useCallback(async () => {
         try {
-            const { data } = await api.get('/bookings/pending');
+            const { data } = await api.get('/bookings/pending', { params: { ownerId } });
             setBookings(data);
         } catch (error) {
             console.error('Failed to fetch pending bookings:', error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [ownerId]);
 
     useEffect(() => {
         fetchPendingBookings();
@@ -186,9 +198,14 @@ const Approvals = () => {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-3xl font-black text-gray-900 uppercase italic tracking-tighter">Booking Approvals</h2>
-                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1">Review and finalize pending vehicle requests</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-3xl font-black text-gray-900 uppercase italic tracking-tighter">Booking Approvals</h2>
+                    <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1">Review and finalize pending vehicle requests</p>
+                </div>
+                {user?.role === 'superadmin' && (
+                    <AdminFilter onFilterChange={setOwnerId} selectedAdminId={ownerId} />
+                )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

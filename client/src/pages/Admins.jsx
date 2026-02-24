@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '../utils/api';
-import { Plus, Trash, Search, Shield, Mail, AlertCircle, Loader2, ChevronRight } from 'lucide-react';
+import { Plus, Trash, Search, Shield, Mail, AlertCircle, Loader2, ChevronRight, Pencil } from 'lucide-react';
 
 const Admins = () => {
     const [admins, setAdmins] = useState([]);
@@ -12,6 +12,7 @@ const Admins = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [permissionModal, setPermissionModal] = useState({ visible: false, admin: null });
+    const [editingAdmin, setEditingAdmin] = useState(null);
 
     const togglePermission = async (admin, page) => {
         const hasPermission = admin.permissions?.includes(page);
@@ -53,28 +54,44 @@ const Admins = () => {
         setLoading(true);
         setError('');
         try {
-            await api.post('/auth/admins', formData);
+            if (editingAdmin) {
+                await api.put(`/auth/admins/${editingAdmin._id}`, formData);
+            } else {
+                await api.post('/auth/admins', formData);
+            }
             fetchAdmins();
             setFormVisible(false);
+            setEditingAdmin(null);
             setFormData({ name: '', email: '', password: '' });
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to create admin');
+            setError(err.response?.data?.message || `Failed to ${editingAdmin ? 'update' : 'create'} admin`);
         } finally {
             setLoading(false);
         }
     };
 
-    /* const handleDelete = async (id) => {
-        if (window.confirm('Delete this admin?')) {
-            // Note: Delete functionality for admins might need a backend route if not implicitly handled 
-            // by a generic user delete. Assuming we might need to add it or use a generic one.
-            // For now, let's assume we can delete via a generic user route if it existed, 
-            // but we only created create/get. I'll add a placeholder alert or implement delete if needed.
-            // Actually, let's check if we have a delete user route. We likely don't properly exposed for admins yet.
-            // For this task, I'll Focus on Add/List.
-            alert('Delete functionality to be implemented in backend.');
+    const handleEdit = (admin) => {
+        setEditingAdmin(admin);
+        setFormData({
+            name: admin.name,
+            email: admin.email,
+            password: '' // Don't show password
+        });
+        setFormVisible(true);
+    };
+
+    const handleDelete = async (e, id) => {
+        e.stopPropagation();
+        if (window.confirm('Are you sure you want to delete this admin? This action cannot be undone.')) {
+            try {
+                await api.delete(`/auth/admins/${id}`);
+                setAdmins(admins.filter(a => a._id !== id));
+            } catch (error) {
+                console.error('Failed to delete admin:', error);
+                alert('Failed to delete admin');
+            }
         }
-    }; */
+    };
 
     const filteredAdmins = admins.filter(admin =>
         admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -113,8 +130,8 @@ const Admins = () => {
                 {/* Mobile View: Cards */}
                 <div className="md:hidden divide-y divide-gray-100">
                     {filteredAdmins.length > 0 ? filteredAdmins.map((admin) => (
-                        <div key={admin._id} onClick={() => setPermissionModal({ visible: true, admin })} className="p-4 active:scale-95 active:bg-gray-50 transition-all">
-                            <div className="flex justify-between items-start mb-2">
+                        <div key={admin._id} className="p-4 active:bg-gray-50 transition-all border-b border-gray-100 last:border-0 relative group">
+                            <div className="flex justify-between items-start mb-2" onClick={() => setPermissionModal({ visible: true, admin })}>
                                 <div className="flex items-center">
                                     <div className="p-2 bg-purple-50 rounded-lg mr-3 text-purple-600">
                                         <Shield className="w-5 h-5" />
@@ -129,10 +146,27 @@ const Admins = () => {
                                 </span>
                             </div>
                             <div className="flex justify-between items-center mt-3">
-                                <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                <div
+                                    onClick={() => setPermissionModal({ visible: true, admin })}
+                                    className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1 cursor-pointer"
+                                >
                                     {admin.permissions?.length || 0} Permissions
+                                    <ChevronRight size={12} />
                                 </div>
-                                <ChevronRight size={16} className="text-gray-300" />
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handleEdit(admin)}
+                                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                    >
+                                        <Pencil className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => handleDelete(e, admin._id)}
+                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <Trash className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )) : (
@@ -180,14 +214,32 @@ const Admins = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <button
-                                            className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${admin.permissions?.length > 0
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-gray-100 text-gray-500'
-                                                }`}
-                                        >
-                                            {admin.permissions?.length || 0} Permissions
-                                        </button>
+                                        <div className="flex items-center justify-end gap-3" onClick={(e) => e.stopPropagation()}>
+                                            <button
+                                                onClick={() => setPermissionModal({ visible: true, admin })}
+                                                className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest transition-all ${admin.permissions?.length > 0
+                                                    ? 'bg-green-50 text-green-700 border border-green-100'
+                                                    : 'bg-gray-50 text-gray-400 border border-gray-100'
+                                                    }`}
+                                            >
+                                                {admin.permissions?.length || 0} Permissions
+                                            </button>
+                                            <div className="h-4 w-[1px] bg-gray-100 mx-1"></div>
+                                            <button
+                                                onClick={() => handleEdit(admin)}
+                                                className="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                                                title="Edit Admin"
+                                            >
+                                                <Pencil className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleDelete(e, admin._id)}
+                                                className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                                title="Delete Admin"
+                                            >
+                                                <Trash className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             )) : (
@@ -206,7 +258,7 @@ const Admins = () => {
             {formVisible && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-all scale-100">
-                        <h3 className="text-xl font-bold text-gray-800 mb-6">Add New Admin</h3>
+                        <h3 className="text-xl font-bold text-gray-800 mb-6">{editingAdmin ? 'Edit Admin' : 'Add New Admin'}</h3>
                         {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
@@ -218,15 +270,34 @@ const Admins = () => {
                                 <input type="email" placeholder="e.g. admin@company.com" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                <input type="password" placeholder="••••••••" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none transition-all" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required />
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Password {editingAdmin && <span className="text-[10px] text-gray-400 font-normal italic">(Leave blank to keep current)</span>}
+                                </label>
+                                <input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    required={!editingAdmin}
+                                />
                             </div>
 
                             <div className="flex justify-end gap-3 mt-8">
-                                <button type="button" onClick={() => setFormVisible(false)} className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors">Cancel</button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setFormVisible(false);
+                                        setEditingAdmin(null);
+                                        setFormData({ name: '', email: '', password: '' });
+                                    }}
+                                    className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                                >
+                                    Cancel
+                                </button>
                                 <button type="submit" disabled={loading} className="px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium shadow-md transition-colors flex items-center">
                                     {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                    Create Admin
+                                    {editingAdmin ? 'Update Admin' : 'Create Admin'}
                                 </button>
                             </div>
                         </form>

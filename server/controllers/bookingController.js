@@ -60,9 +60,17 @@ const getBookings = asyncHandler(async (req, res) => {
     if (req.query.mobile) {
         query.mobile = req.query.mobile;
     }
+    if (req.user) {
+        if (req.user.role === 'admin') {
+            query.owner = req.user._id;
+        } else if (req.user.role === 'superadmin' && req.query.ownerId) {
+            query.owner = req.query.ownerId;
+        }
+    }
     const bookings = await Booking.find(query)
-        .populate('car', 'name model registrationNumber images pricePer24h transmission fuelType seats')
+        .populate('car', 'name model registrationNumber images pricePer24h transmission fuelType seats owner')
         .populate('driver', 'name mobile licenseNumber')
+        .populate('owner', 'name')
         .sort({ createdAt: -1 });
     res.json(bookings);
 });
@@ -72,9 +80,18 @@ const getBookings = asyncHandler(async (req, res) => {
 // @route   GET /api/bookings/pending
 // @access  Private (Admin/Superadmin with permission)
 const getPendingBookings = asyncHandler(async (req, res) => {
-    const bookings = await Booking.find({ status: 'pending' })
+    let query = { status: 'pending' };
+    if (req.user) {
+        if (req.user.role === 'admin') {
+            query.owner = req.user._id;
+        } else if (req.user.role === 'superadmin' && req.query.ownerId) {
+            query.owner = req.query.ownerId;
+        }
+    }
+    const bookings = await Booking.find(query)
         .populate('car', 'name model registrationNumber')
         .populate('driver', 'name mobile licenseNumber')
+        .populate('owner', 'name')
         .sort({ createdAt: -1 });
     res.json(bookings);
 });
@@ -186,7 +203,8 @@ const createBooking = asyncHandler(async (req, res) => {
         totalAmount,
         pickupLocation,
         dropLocation,
-        user: bookingUser
+        user: bookingUser,
+        owner: carData.owner
     });
 
     if (booking) {

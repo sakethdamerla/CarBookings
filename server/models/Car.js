@@ -48,6 +48,15 @@ const carSchema = mongoose.Schema({
         ref: 'Driver',
         default: null,
     },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    providedByAdminEmail: {
+        type: String,
+        default: '',
+    },
 }, {
     timestamps: true,
 });

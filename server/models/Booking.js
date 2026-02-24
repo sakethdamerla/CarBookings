@@ -50,6 +50,10 @@ const bookingSchema = mongoose.Schema({
     totalAmount: {
         type: Number,
     },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
 }, {
     timestamps: true,
 });

@@ -23,6 +23,7 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const statsRoutes = require('./routes/statsRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const pushRoutes = require('./routes/pushRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -34,6 +35,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/push', pushRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 app.get('/', (req, res) => {
     res.send('API is running...');

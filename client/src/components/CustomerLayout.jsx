@@ -2,6 +2,7 @@ import { useContext } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Calendar, User, Home, LogOut } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
+import AnnouncementListener from './AnnouncementListener';
 
 const CustomerLayout = () => {
     const { user, logout } = useContext(AuthContext);
@@ -16,6 +17,7 @@ const CustomerLayout = () => {
 
     return (
         <div className="min-h-screen bg-gray-200 flex flex-col items-center">
+            <AnnouncementListener />
             {/* Main Content Area - Centered with max-width for desktop */}
             <div className="w-full max-w-[1400px] flex-1 flex flex-col relative">
                 <main className="flex-1 w-full">

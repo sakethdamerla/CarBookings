@@ -3,6 +3,7 @@ import { useContext, useState } from 'react';
 import AuthContext from '../context/AuthContext';
 import { LayoutDashboard, Car, User, Calendar, LogOut, Menu, X, ChevronRight, Shield, Settings } from 'lucide-react';
 import NotificationCenter from './NotificationCenter';
+import AnnouncementListener from './AnnouncementListener';
 
 const Layout = () => {
     const { logout, user } = useContext(AuthContext);
@@ -48,6 +49,7 @@ const Layout = () => {
 
     return (
         <div className="flex h-screen bg-gray-50">
+            <AnnouncementListener />
             {/* Sidebar Overlay for Mobile */}
             {isSidebarOpen && (
                 <div

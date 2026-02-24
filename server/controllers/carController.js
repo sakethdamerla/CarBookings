@@ -1,11 +1,20 @@
 const asyncHandler = require('express-async-handler');
 const Car = require('../models/Car');
+const User = require('../models/User');
 
 // @desc    Get all cars
 // @route   GET /api/cars
 // @access  Private (Admin/SuperAdmin/User?) - Let's say Admin/SuperAdmin for managing, User for booking
 const getCars = asyncHandler(async (req, res) => {
-    const cars = await Car.find({});
+    let query = {};
+    if (req.user) {
+        if (req.user.role === 'admin') {
+            query.owner = req.user._id;
+        } else if (req.user.role === 'superadmin' && req.query.ownerId) {
+            query.owner = req.query.ownerId;
+        }
+    }
+    const cars = await Car.find(query).populate('owner', 'name username email mobile');
     res.json(cars);
 });
 
@@ -13,7 +22,7 @@ const getCars = asyncHandler(async (req, res) => {
 // @route   GET /api/cars/:id
 // @access  Private
 const getCar = asyncHandler(async (req, res) => {
-    const car = await Car.findById(req.params.id);
+    const car = await Car.findById(req.params.id).populate('owner', 'name username email mobile');
 
     if (car) {
         res.json(car);
@@ -51,6 +60,8 @@ const createCar = asyncHandler(async (req, res) => {
         fuelType: (fuelType && fuelType !== 'undefined') ? fuelType : 'Petrol',
         seats: seats ? Number(seats) : 4,
         images: [image],
+        owner: req.user._id,
+        providedByAdminEmail: req.user.email,
     });
 
     if (car) {

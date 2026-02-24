@@ -7,24 +7,46 @@ const Booking = require('../models/Booking');
 // @route   GET /api/stats
 // @access  Private (Admin)
 const getStats = asyncHandler(async (req, res) => {
-    const totalCars = await Car.countDocuments();
-    const totalDrivers = await Driver.countDocuments();
-    const totalBookings = await Booking.countDocuments();
+    let query = {};
+    if (req.user) {
+        if (req.user.role === 'admin') {
+            query.owner = req.user._id;
+        } else if (req.user.role === 'superadmin' && req.query.ownerId) {
+            query.owner = req.query.ownerId;
+        }
+    }
 
-    // Calculate total revenue (assuming totalAmount is populated)
-    const bookings = await Booking.find({ status: 'completed' });
+    const totalCars = await Car.countDocuments(query);
+    const totalDrivers = await Driver.countDocuments(query);
+    const totalBookings = await Booking.countDocuments(query);
+
+    // Calculate total revenue (confirmed and completed)
+    const bookings = await Booking.find({ ...query, status: { $in: ['confirmed', 'completed'] } });
     const totalRevenue = bookings.reduce((acc, booking) => acc + (booking.totalAmount || 0), 0);
 
     // Get monthly bookings (simple aggregation)
-    const monthlyBookings = await Booking.aggregate([
+    const pipeline = [];
+    if (Object.keys(query).length > 0) {
+        // Convert string ID to ObjectId for aggregate match if needed
+        const matchQuery = { ...query };
+        if (matchQuery.owner && typeof matchQuery.owner === 'string') {
+            const mongoose = require('mongoose');
+            matchQuery.owner = new mongoose.Types.ObjectId(matchQuery.owner);
+        }
+        pipeline.push({ $match: matchQuery });
+    }
+
+    pipeline.push(
         {
             $group: {
                 _id: { $month: "$createdAt" },
                 count: { $sum: 1 }
             }
         },
-        { $sort: { _id: 1 } } // Sort by month
-    ]);
+        { $sort: { _id: 1 } }
+    );
+
+    const monthlyBookings = await Booking.aggregate(pipeline);
 
     res.json({
         totalCars,

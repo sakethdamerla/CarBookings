@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { ArrowLeft, Share2, Heart, Star, ChevronRight, Check, ShieldCheck, Zap, Fuel, Users, Settings2, Compass, Info } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, Star, ChevronRight, Check, ShieldCheck, Zap, Fuel, Users, User, Settings2, Compass, Info } from 'lucide-react';
 
 const CarDetails = () => {
     const { id } = useParams();
@@ -57,6 +57,20 @@ const CarDetails = () => {
                                 className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                             />
                         </div>
+                        {car.owner && (
+                            <div className="flex items-center gap-3 p-6 bg-gray-50 rounded-3xl border border-gray-100 w-fit">
+                                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white text-xs font-black">
+                                    {car.owner?.name?.charAt(0) || 'P'}
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Provided By</p>
+                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">{car.owner?.username || car.owner?.name || 'Official Provider'}</p>
+                                    {car.owner?.mobile && (
+                                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">{car.owner.mobile}</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Details Section */}

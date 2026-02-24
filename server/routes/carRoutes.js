@@ -7,11 +7,11 @@ const {
     updateCar,
     deleteCar,
 } = require('../controllers/carController');
-const { protect, admin } = require('../middleware/authMiddleware');
+const { protect, admin, optionalProtect } = require('../middleware/authMiddleware');
 
 const upload = require('../middleware/uploadMiddleware');
 
-router.route('/').get(getCars).post(protect, admin, upload.single('image'), createCar);
+router.route('/').get(optionalProtect, getCars).post(protect, admin, upload.single('image'), createCar);
 router
     .route('/:id')
     .get(getCar)

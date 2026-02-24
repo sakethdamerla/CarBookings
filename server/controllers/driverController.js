@@ -5,7 +5,15 @@ const Driver = require('../models/Driver');
 // @route   GET /api/drivers
 // @access  Private
 const getDrivers = asyncHandler(async (req, res) => {
-    const drivers = await Driver.find({}).populate('assignedCar', 'name model registrationNumber');
+    let query = {};
+    if (req.user) {
+        if (req.user.role === 'admin') {
+            query.owner = req.user._id;
+        } else if (req.user.role === 'superadmin' && req.query.ownerId) {
+            query.owner = req.query.ownerId;
+        }
+    }
+    const drivers = await Driver.find(query).populate('assignedCar', 'name model registrationNumber');
     res.json(drivers);
 });
 
@@ -41,6 +49,7 @@ const createDriver = asyncHandler(async (req, res) => {
         mobile,
         licenseNumber,
         assignedCar,
+        owner: req.user._id,
     });
 
     if (driver) {

@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { ArrowLeft, Calendar, Clock, ChevronRight, Check, Star, MapPin, UserCheck, Car } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, ChevronRight, Check, Star, MapPin, UserCheck, Car as CarIcon } from 'lucide-react';
 import GuestLoginModal from '../components/GuestLoginModal';
 import AuthContext from '../context/AuthContext';
 import Swal from 'sweetalert2';
@@ -311,56 +311,6 @@ const BookCar = () => {
                                 </div>
                             </div>
                         )}
-
-                        {/* Location Details */}
-                        <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-gray-100 shadow-xl space-y-8">
-                            <div>
-                                <h3 className="font-black text-gray-900 text-xl tracking-tighter uppercase">Delivery Details</h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Where should we handle the car?</p>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
-                                    <div className="relative group">
-                                        <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-black transition-colors" />
-                                        <input
-                                            type="text"
-                                            placeholder="Enter full address for pickup"
-                                            value={pickupLocation}
-                                            onChange={(e) => setPickupLocation(e.target.value)}
-                                            className={`w-full pl-14 pr-6 py-5 bg-gray-50 border rounded-2xl font-black text-gray-800 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all ${errors.pickupLocation ? 'border-red-500 ring-4 ring-red-500/10' : 'border-gray-100'}`}
-                                        />
-                                    </div>
-                                    {errors.pickupLocation && (
-                                        <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mt-2 ml-1 animate-in fade-in slide-in-from-top-1">
-                                            {errors.pickupLocation}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {bookingType === 'car_with_driver' && (
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Drop Address</label>
-                                        <div className="relative group">
-                                            <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-black transition-colors" />
-                                            <input
-                                                type="text"
-                                                placeholder="Enter full address for drop"
-                                                value={dropLocation}
-                                                onChange={(e) => setDropLocation(e.target.value)}
-                                                className={`w-full pl-14 pr-6 py-5 bg-gray-50 border rounded-2xl font-black text-gray-800 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all ${errors.dropLocation ? 'border-red-500 ring-4 ring-red-500/10' : 'border-gray-100'}`}
-                                            />
-                                        </div>
-                                        {errors.dropLocation && (
-                                            <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mt-2 ml-1 animate-in fade-in slide-in-from-top-1">
-                                                {errors.dropLocation}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
                     </div>
 
                     {/* Right Column: Summary & Confirmation */}
@@ -409,7 +359,7 @@ const BookCar = () => {
                             className={`p-8 rounded-[3rem] border-2 transition-all cursor-pointer group flex items-center gap-6 ${bookingType === 'car_with_driver' ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'}`}
                         >
                             <div className={`w-16 h-16 rounded-[2rem] flex items-center justify-center transition-all ${bookingType === 'car_with_driver' ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'}`}>
-                                {bookingType === 'car_with_driver' ? <UserCheck className="w-8 h-8" /> : <Car className="w-8 h-8" />}
+                                {bookingType === 'car_with_driver' ? <UserCheck className="w-8 h-8" /> : <CarIcon className="w-8 h-8" />}
                             </div>
                             <div className="flex-1 text-left">
                                 <h3 className="font-black text-gray-900 text-lg md:text-xl tracking-tighter uppercase">Need Driver?</h3>
@@ -437,6 +387,56 @@ const BookCar = () => {
                                 )}
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                {/* Delivery Details moved to bottom */}
+                <div className="mt-10 bg-white p-8 md:p-10 rounded-[3rem] border border-gray-100 shadow-xl space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                    <div>
+                        <h3 className="font-black text-gray-900 text-xl tracking-tighter uppercase">Delivery Details</h3>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Where should we handle the car?</p>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                            <div className="relative group">
+                                <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Enter full address for pickup"
+                                    value={pickupLocation}
+                                    onChange={(e) => setPickupLocation(e.target.value)}
+                                    className={`w-full pl-14 pr-6 py-5 bg-gray-50 border rounded-2xl font-black text-gray-800 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all ${errors.pickupLocation ? 'border-red-500 ring-4 ring-red-500/10' : 'border-gray-100'}`}
+                                />
+                            </div>
+                            {errors.pickupLocation && (
+                                <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mt-2 ml-1 animate-in fade-in slide-in-from-top-1">
+                                    {errors.pickupLocation}
+                                </div>
+                            )}
+                        </div>
+
+                        {bookingType === 'car_with_driver' && (
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Drop Address</label>
+                                <div className="relative group">
+                                    <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="Enter full address for drop"
+                                        value={dropLocation}
+                                        onChange={(e) => setDropLocation(e.target.value)}
+                                        className={`w-full pl-14 pr-6 py-5 bg-gray-50 border rounded-2xl font-black text-gray-800 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all ${errors.dropLocation ? 'border-red-500 ring-4 ring-red-500/10' : 'border-gray-100'}`}
+                                    />
+                                </div>
+                                {errors.dropLocation && (
+                                    <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mt-2 ml-1 animate-in fade-in slide-in-from-top-1">
+                                        {errors.dropLocation}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

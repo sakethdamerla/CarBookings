@@ -1,10 +1,14 @@
-import { useEffect, useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
-import { Plus, Edit, Trash, Search, Car, AlertCircle, ImageIcon, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash, Search, Car, User, AlertCircle, ImageIcon, Loader2 } from 'lucide-react';
+import AdminFilter from '../components/AdminFilter';
+import AuthContext from '../context/AuthContext';
+import { useContext, useState, useEffect } from 'react';
 
 const Cars = () => {
     const queryClient = useQueryClient();
+    const { user } = useContext(AuthContext);
+    const [ownerId, setOwnerId] = useState(null);
     const [formVisible, setFormVisible] = useState(false);
     const [formData, setFormData] = useState({
         name: '', model: '', registrationNumber: '', type: 'Sedan', status: 'available', pricePer24h: 0,
@@ -15,9 +19,9 @@ const Cars = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { data: cars = [], isLoading: loading } = useQuery({
-        queryKey: ['cars'],
+        queryKey: ['cars', ownerId],
         queryFn: async () => {
-            const { data } = await api.get('/cars');
+            const { data } = await api.get('/cars', { params: { ownerId } });
             return data;
         },
     });
@@ -96,7 +100,8 @@ const Cars = () => {
     const filteredCars = cars.filter(car =>
         car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         car.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        car.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase())
+        car.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (car.providedByAdminEmail && car.providedByAdminEmail.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return (
@@ -106,27 +111,32 @@ const Cars = () => {
                     <h2 className="text-2xl font-bold text-gray-800">Fleet Management</h2>
                     <p className="text-gray-500">Manage your vehicle inventory and status</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setFormVisible(true);
-                        setEditingId(null);
-                        setFormData({
-                            name: '',
-                            model: '',
-                            registrationNumber: '',
-                            type: 'Sedan',
-                            status: 'available',
-                            pricePer24h: 0,
-                            transmission: 'Manual',
-                            fuelType: 'Petrol',
-                            seats: 4,
-                            image: null
-                        });
-                    }}
-                    className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all text-sm font-semibold flex items-center"
-                >
-                    <Plus className="w-5 h-5 mr-2" /> Add Vehicle
-                </button>
+                <div className="flex flex-wrap items-center gap-4">
+                    {user?.role === 'superadmin' && (
+                        <AdminFilter onFilterChange={setOwnerId} selectedAdminId={ownerId} />
+                    )}
+                    <button
+                        onClick={() => {
+                            setFormVisible(true);
+                            setEditingId(null);
+                            setFormData({
+                                name: '',
+                                model: '',
+                                registrationNumber: '',
+                                type: 'Sedan',
+                                status: 'available',
+                                pricePer24h: 0,
+                                transmission: 'Manual',
+                                fuelType: 'Petrol',
+                                seats: 4,
+                                image: null
+                            });
+                        }}
+                        className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all text-sm font-semibold flex items-center"
+                    >
+                        <Plus className="w-5 h-5 mr-2" /> Add Vehicle
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -164,7 +174,7 @@ const Cars = () => {
                                                 <ImageIcon className="w-10 h-10" />
                                             </div>
                                         )}
-                                        <div className="absolute top-3 right-3 flex gap-2 transition-opacity">
+                                        <div className={`absolute top-3 right-3 flex gap-2 transition-all ${user?.role === 'superadmin' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); handleEdit(car); }}
                                                 className="p-2 bg-white/90 backdrop-blur-sm text-blue-600 rounded-lg hover:bg-blue-50 transition-colors shadow-sm"
@@ -190,6 +200,18 @@ const Cars = () => {
                                             <div>
                                                 <h3 className="font-bold text-gray-800 text-lg">{car.name}</h3>
                                                 <p className="text-sm text-gray-500">{car.model}</p>
+                                                {user?.role === 'superadmin' && car.owner && (
+                                                    <div className="mt-1 space-y-0.5">
+                                                        <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest flex items-center gap-1">
+                                                            <User className="w-3 h-3" /> {car.owner.username || car.owner.name}
+                                                        </p>
+                                                        {car.providedByAdminEmail && (
+                                                            <p className="text-[9px] text-gray-500 font-medium lowercase italic flex items-center gap-1">
+                                                                {car.providedByAdminEmail}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                             <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border border-gray-200">
                                                 {car.type}
