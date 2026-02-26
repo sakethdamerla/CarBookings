@@ -48,7 +48,11 @@ const userSchema = mongoose.Schema({
             p256dh: String,
             auth: String
         }
-    }]
+    }],
+    subscriptionEndDate: {
+        type: Date,
+        default: null
+    }
 }, {
     timestamps: true,
 });

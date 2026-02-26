@@ -274,6 +274,18 @@ const updateBooking = asyncHandler(async (req, res) => {
         if (req.body.totalAmount !== undefined) {
             booking.totalAmount = req.body.totalAmount;
         }
+        if (req.body.carRate !== undefined) {
+            booking.carRate = req.body.carRate;
+        }
+        if (req.body.driverRate !== undefined) {
+            booking.driverRate = req.body.driverRate;
+        }
+        if (req.body.extraKmPrice !== undefined) {
+            booking.extraKmPrice = req.body.extraKmPrice;
+        }
+        if (req.body.extraTimePrice !== undefined) {
+            booking.extraTimePrice = req.body.extraTimePrice;
+        }
         const updatedBooking = await booking.save();
 
         // If status changed (e.g. approved/rejected), notify user

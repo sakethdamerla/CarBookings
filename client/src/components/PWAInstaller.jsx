@@ -32,35 +32,26 @@ const PWAInstaller = () => {
     if (!showPopup) return null;
 
     return (
-        <div className="fixed bottom-2 z-[9999] left-2 right-2 md:left-auto md:right-8 md:w-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-black/90 backdrop-blur-xl rounded-2xl shadow-2xl p-2 pl-3 border border-white/10 flex items-center gap-3 md:gap-6">
-                <div className="flex items-center gap-2 shrink-0">
-                    <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
-                        <Download className="text-white w-4 h-4" />
+        <div className="fixed top-0 inset-x-0 z-[10000] animate-in slide-in-from-top duration-700">
+            <div className="bg-indigo-600 px-4 py-2 flex items-center justify-between shadow-lg">
+                <div className="flex items-center gap-3">
+                    <div className="p-1 bg-white/20 rounded-md">
+                        <Download size={14} className="text-white" />
                     </div>
-                    <div className="hidden xs:block">
-                        <h3 className="text-[10px] font-black text-white uppercase tracking-tighter leading-none">Install App</h3>
-                    </div>
+                    <p className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Install Car Bookings App for a better experience</p>
                 </div>
 
-                <div className="flex items-center gap-2 flex-1">
-                    <p className="text-[10px] font-black text-white uppercase tracking-tighter leading-none">Install the app now</p>
+                <div className="flex items-center gap-4">
                     <button
                         onClick={handleInstall}
-                        className="bg-white text-black ml-14 px-6 py-2 rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-gray-100 transition-all active:scale-95 whitespace-nowrap"
+                        className="bg-white text-indigo-600 px-4 py-1 rounded-full font-black text-[9px] uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95"
                     >
                         Install Now
                     </button>
-
-                    <div className="hidden sm:flex items-center gap-2 text-[8px] text-gray-400 font-bold uppercase tracking-widest border-l border-white/10 pl-4 whitespace-nowrap">
-                        <Share className="w-3 h-3" />
-                        iOS: Add to Home Screen
-                    </div>
+                    <button onClick={() => setShowPopup(false)} className="text-white/60 hover:text-white transition-colors">
+                        <X size={16} />
+                    </button>
                 </div>
-
-                <button onClick={() => setShowPopup(false)} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors shrink-0">
-                    <X size={14} className="text-gray-400" />
-                </button>
             </div>
         </div>
     );

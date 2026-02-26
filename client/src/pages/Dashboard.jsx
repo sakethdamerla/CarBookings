@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '../utils/api';
+import PageLoader from '../components/PageLoader';
 import { Users, Car, User, Calendar, TrendingUp, DollarSign, MapPin, Clock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { formatIST } from '../utils/dateUtils';
 import { useNavigate } from 'react-router-dom';
@@ -42,11 +43,7 @@ const Dashboard = () => {
     const error = statsError || pendingError;
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-12 h-12 text-black animate-spin" />
-            </div>
-        );
+        return <PageLoader />;
     }
 
     if (error) {

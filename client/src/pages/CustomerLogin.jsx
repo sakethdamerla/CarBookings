@@ -16,7 +16,7 @@ const CustomerLogin = () => {
         setError('');
         try {
             await loginWithMobile(mobile);
-            navigate('/customer/home');
+            window.location.href = '/customer/home';
         } catch {
             setError('Login failed. Please try again.');
         } finally {

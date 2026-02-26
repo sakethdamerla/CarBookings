@@ -29,6 +29,7 @@ const authUser = asyncHandler(async (req, res) => {
             email: user.email,
             role: user.role,
             permissions: user.permissions,
+            subscriptionEndDate: user.subscriptionEndDate,
             token: generateToken(user._id),
         });
     } else {
@@ -87,6 +88,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
             email: user.email,
             role: user.role,
             permissions: user.permissions,
+            subscriptionEndDate: user.subscriptionEndDate,
         });
     } else {
         res.status(404);
@@ -114,6 +116,7 @@ const createAdmin = asyncHandler(async (req, res) => {
         password,
         role: 'admin',
         permissions: permissions || [],
+        subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default 30 days
     });
 
     if (user) {
@@ -124,6 +127,7 @@ const createAdmin = asyncHandler(async (req, res) => {
             email: user.email,
             role: user.role,
             permissions: user.permissions,
+            subscriptionEndDate: user.subscriptionEndDate,
         });
     } else {
         res.status(400);
@@ -202,6 +206,31 @@ const deleteAdmin = asyncHandler(async (req, res) => {
     } else {
         res.status(404);
         throw new Error('Admin not found');
+    }
+});
+
+// @desc    Extend admin subscription
+// @route   PUT /api/auth/admins/:id/extend
+// @access  Private (SuperAdmin)
+const extendSubscription = asyncHandler(async (req, res) => {
+    const { days } = req.body;
+    const user = await User.findById(req.params.id);
+
+    if (user && (user.role === 'admin' || user.role === 'superadmin')) {
+        const currentEnd = user.subscriptionEndDate && user.subscriptionEndDate > new Date()
+            ? user.subscriptionEndDate
+            : new Date();
+
+        user.subscriptionEndDate = new Date(currentEnd.getTime() + days * 24 * 60 * 60 * 1000);
+        const updatedUser = await user.save();
+
+        res.json({
+            _id: updatedUser._id,
+            subscriptionEndDate: updatedUser.subscriptionEndDate,
+        });
+    } else {
+        res.status(404);
+        throw new Error('User not found or not an admin');
     }
 });
 
@@ -298,6 +327,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             mobile: updatedUser.mobile,
             role: updatedUser.role,
             permissions: updatedUser.permissions,
+            subscriptionEndDate: updatedUser.subscriptionEndDate,
             notificationsEnabled: updatedUser.notificationsEnabled,
             token: generateToken(updatedUser._id),
         });
@@ -307,4 +337,16 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { authUser, registerUser, getUserProfile, createAdmin, getAdmins, loginWithMobile, updateAdminPermissions, updateUserProfile, updateAdmin, deleteAdmin };
+module.exports = {
+    authUser,
+    registerUser,
+    getUserProfile,
+    createAdmin,
+    getAdmins,
+    loginWithMobile,
+    updateAdminPermissions,
+    updateUserProfile,
+    updateAdmin,
+    deleteAdmin,
+    extendSubscription
+};

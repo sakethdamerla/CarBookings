@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
+import PageLoader from '../components/PageLoader';
 import moment from 'moment';
 import {
     Check,
@@ -18,12 +19,36 @@ import AuthContext from '../context/AuthContext';
 
 const ApprovalModal = ({ booking, onConfirm, onCancel, loading }) => {
     const [rate, setRate] = useState('');
+    const [baseRate, setBaseRate] = useState('');
+    const [carRate, setCarRate] = useState('');
+    const [driverRate, setDriverRate] = useState('');
+    const [extraKmPrice, setExtraKmPrice] = useState('');
+    const [extraTimePrice, setExtraTimePrice] = useState('');
+
     const startDate = getIST(booking.startDate);
     const endDate = getIST(booking.endDate);
     const duration = moment.duration(endDate.diff(startDate));
 
     const days = Math.floor(duration.asDays());
     const hours = duration.hours();
+
+    const isCarWithDriver = booking.bookingType === 'car_with_driver';
+
+    useEffect(() => {
+        if (booking) {
+            setBaseRate(booking.totalAmount?.toString() || '');
+            setCarRate(booking.carRate?.toString() || '');
+            setDriverRate(booking.driverRate?.toString() || '');
+            setExtraKmPrice(booking.extraKmPrice?.toString() || '');
+            setExtraTimePrice(booking.extraTimePrice?.toString() || '');
+        }
+    }, [booking]);
+
+    useEffect(() => {
+        const baseTotal = isCarWithDriver ? (Number(carRate) || 0) + (Number(driverRate) || 0) : (Number(baseRate) || 0);
+        const finalTotal = baseTotal + (Number(extraKmPrice) || 0) + (Number(extraTimePrice) || 0);
+        setRate(finalTotal > 0 ? finalTotal.toString() : '');
+    }, [carRate, driverRate, extraKmPrice, extraTimePrice, isCarWithDriver, baseRate]);
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 animate-in fade-in duration-300">
@@ -62,47 +87,71 @@ const ApprovalModal = ({ booking, onConfirm, onCancel, loading }) => {
                         </div>
                     </div>
 
-                    <div className="space-y-4 bg-blue-50/50 p-6 rounded-3xl border border-blue-100">
-                        <div className="flex items-start gap-4">
-                            <div className="mt-1"><Calendar className="w-4 h-4 text-blue-600" /></div>
-                            <div className="flex-1 text-xs">
-                                <div className="flex justify-between items-center mb-2 pb-2 border-b border-blue-100/50">
-                                    <span className="font-bold text-blue-900 uppercase">Pickup</span>
-                                    <span className="font-black text-blue-600">{formatIST(booking.startDate)}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="font-bold text-blue-900 uppercase">Dropoff</span>
-                                    <span className="font-black text-blue-600">{formatIST(booking.endDate)}</span>
-                                </div>
+                    {!isCarWithDriver ? (
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Final Total Rate (₹)</label>
+                            <div className="relative group">
+                                <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                                <input
+                                    type="number"
+                                    placeholder="Enter final amount..."
+                                    value={baseRate}
+                                    onChange={(e) => setBaseRate(e.target.value)}
+                                    className="w-full pl-14 pr-8 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:bg-white focus:border-black outline-none transition-all font-black text-lg"
+                                    autoFocus
+                                />
                             </div>
                         </div>
-                        <div className="flex items-start gap-4 pt-4 border-t border-blue-100/50">
-                            <div className="mt-1"><MapPin className="w-4 h-4 text-orange-600" /></div>
-                            <div className="flex-1 text-xs">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="font-bold text-orange-900 uppercase">Pickup</span>
-                                    <span className="font-black text-orange-600 truncate ml-4">{booking.pickupLocation}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="font-bold text-orange-900 uppercase">Dropoff</span>
-                                    <span className="font-black text-orange-600 truncate ml-4">{booking.dropLocation}</span>
-                                </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Car Rate (₹)</label>
+                                <input
+                                    type="number"
+                                    placeholder="Car price"
+                                    value={carRate}
+                                    onChange={(e) => setCarRate(e.target.value)}
+                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-600 outline-none transition-all font-black text-sm"
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Driver Rate (₹)</label>
+                                <input
+                                    type="number"
+                                    placeholder="Driver price"
+                                    value={driverRate}
+                                    onChange={(e) => setDriverRate(e.target.value)}
+                                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-blue-600 outline-none transition-all font-black text-sm"
+                                />
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    <div className="space-y-3">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Final Total Rate (₹)</label>
-                        <div className="relative group">
-                            <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                    <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Extra Kms Price (₹)</label>
                             <input
                                 type="number"
-                                placeholder="Enter final amount..."
-                                value={rate}
-                                onChange={(e) => setRate(e.target.value)}
-                                className="w-full pl-14 pr-8 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:bg-white focus:border-black outline-none transition-all font-black text-lg"
-                                autoFocus
+                                placeholder="Extra kms"
+                                value={extraKmPrice}
+                                onChange={(e) => setExtraKmPrice(e.target.value)}
+                                className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-purple-600 outline-none transition-all font-black text-sm"
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Extra Time Price (₹)</label>
+                            <input
+                                type="number"
+                                placeholder="Extra time"
+                                value={extraTimePrice}
+                                onChange={(e) => setExtraTimePrice(e.target.value)}
+                                className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-purple-600 outline-none transition-all font-black text-sm"
+                            />
+                        </div>
+                        <div className="col-span-2 pt-2 border-t border-gray-100 flex justify-between items-center px-4">
+                            <span className="text-[10px] font-black text-gray-400 uppercase">Final Total amount</span>
+                            <span className="text-xl font-black text-gray-900">₹{rate || '0'}</span>
                         </div>
                     </div>
 
@@ -114,7 +163,7 @@ const ApprovalModal = ({ booking, onConfirm, onCancel, loading }) => {
                             Cancel
                         </button>
                         <button
-                            onClick={() => onConfirm(rate)}
+                            onClick={() => onConfirm({ totalAmount: rate, carRate, driverRate, extraKmPrice, extraTimePrice })}
                             disabled={loading || !rate}
                             className="flex-[2] py-5 bg-black text-white rounded-[1.5rem] font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-gray-300 hover:bg-gray-800 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                         >
@@ -155,13 +204,17 @@ const Approvals = () => {
         return () => window.removeEventListener('refreshData', fetchPendingBookings);
     }, [fetchPendingBookings]);
 
-    const handleAction = async (id, status, totalAmount = null) => {
+    const handleAction = async (id, status, rates = {}) => {
         if (status === 'rejected' && !window.confirm('Are you sure you want to reject this booking?')) return;
 
         setActionLoading(id);
         try {
             const payload = { status };
-            if (totalAmount !== null) payload.totalAmount = totalAmount;
+            if (rates.totalAmount !== undefined) payload.totalAmount = rates.totalAmount;
+            if (rates.carRate !== undefined) payload.carRate = rates.carRate;
+            if (rates.driverRate !== undefined) payload.driverRate = rates.driverRate;
+            if (rates.extraKmPrice !== undefined) payload.extraKmPrice = rates.extraKmPrice;
+            if (rates.extraTimePrice !== undefined) payload.extraTimePrice = rates.extraTimePrice;
 
             await api.put(`/bookings/${id}`, payload);
 
@@ -179,11 +232,7 @@ const Approvals = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-            </div>
-        );
+        return <PageLoader />;
     }
 
     if (!user || (user.role !== 'superadmin' && !user.permissions?.includes('approvals'))) {

@@ -18,7 +18,7 @@ const Login = () => {
         setError('');
         try {
             await login(email, password);
-            navigate('/admin');
+            window.location.href = '/admin';
 
         } catch {
             setError('Invalid credentials');

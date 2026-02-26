@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../utils/api';
+import PageLoader from '../components/PageLoader';
 import { Plus, Edit, Trash, Search, Car, User, AlertCircle, ImageIcon, Loader2 } from 'lucide-react';
 import AdminFilter from '../components/AdminFilter';
 import AuthContext from '../context/AuthContext';
@@ -155,9 +156,7 @@ const Cars = () => {
 
                 <div className="p-4 md:p-6">
                     {loading ? (
-                        <div className="flex justify-center items-center h-64">
-                            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                        </div>
+                        <PageLoader />
                     ) : filteredCars.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                             {filteredCars.map((car) => (

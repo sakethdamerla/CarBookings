@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authUser, registerUser, getUserProfile, createAdmin, getAdmins, loginWithMobile, updateAdminPermissions, updateUserProfile, updateAdmin, deleteAdmin } = require('../controllers/authController');
+const { authUser, registerUser, getUserProfile, createAdmin, getAdmins, loginWithMobile, updateAdminPermissions, updateUserProfile, updateAdmin, deleteAdmin, extendSubscription } = require('../controllers/authController');
 const { protect, superAdmin } = require('../middleware/authMiddleware');
 
 router.post('/register', registerUser);
@@ -18,6 +18,7 @@ router.route('/admins/:id')
     .delete(protect, superAdmin, deleteAdmin);
 
 router.route('/admins/:id/permissions').put(protect, superAdmin, updateAdminPermissions);
+router.route('/admins/:id/extend').put(protect, superAdmin, extendSubscription);
 router.post('/mobile-login', loginWithMobile);
 
 module.exports = router;

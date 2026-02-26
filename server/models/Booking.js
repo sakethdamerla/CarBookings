@@ -50,6 +50,20 @@ const bookingSchema = mongoose.Schema({
     totalAmount: {
         type: Number,
     },
+    carRate: {
+        type: Number,
+    },
+    driverRate: {
+        type: Number,
+    },
+    extraKmPrice: {
+        type: Number,
+        default: 0
+    },
+    extraTimePrice: {
+        type: Number,
+        default: 0
+    },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

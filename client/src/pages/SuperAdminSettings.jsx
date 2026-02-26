@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from 'react';
 import AuthContext from '../context/AuthContext';
 import api from '../utils/api';
+import PageLoader from '../components/PageLoader';
 import {
     Bell,
     BellOff,
@@ -207,7 +208,7 @@ const SuperAdminSettings = () => {
             <section className="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 shadow-2xl shadow-gray-100/50 border border-gray-100 relative overflow-hidden">
                 {settingsLoading && (
                     <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
-                        <Loader2 className="w-8 h-8 text-black animate-spin" />
+                        <PageLoader />
                     </div>
                 )}
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useContext } from 'react';
-import { Bell, CheckSquare, X, Info, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Bell, CheckSquare, X, Info, CheckCircle2, XCircle, Clock, Trash } from 'lucide-react';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
 import { formatIST } from '../utils/dateUtils';
@@ -85,6 +85,23 @@ const NotificationCenter = ({ trigger }) => {
             fetchNotifications();
         } catch (error) {
             console.error('Failed to mark as read:', error);
+        }
+    };
+
+    const deleteNotification = async (e, id) => {
+        e.stopPropagation();
+        if (!user) return;
+        try {
+            await api.delete(`/notifications/${id}`);
+            setNotifications(prev => prev.filter(n => n._id !== id));
+            if (unreadCount > 0) {
+                const deletedNotif = notifications.find(n => n._id === id);
+                if (deletedNotif && !deletedNotif.isRead) {
+                    setUnreadCount(prev => prev - 1);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to delete notification:', error);
         }
     };
 
@@ -193,6 +210,15 @@ const NotificationCenter = ({ trigger }) => {
                                         {!n.isRead && (
                                             <div className="w-2.5 h-2.5 bg-black rounded-full mt-2 ring-4 ring-black/5 animate-pulse"></div>
                                         )}
+                                        <div className="flex flex-col justify-center">
+                                            <button
+                                                onClick={(e) => deleteNotification(e, n._id)}
+                                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                title="Delete Notification"
+                                            >
+                                                <Trash size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

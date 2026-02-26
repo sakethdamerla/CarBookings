@@ -83,7 +83,10 @@ const startAnnouncementEngine = () => {
     setInterval(async () => {
         try {
             const now = new Date();
-            const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            // Convert to IST (UTC+5:30)
+            const istOffset = 5.5 * 60 * 60 * 1000;
+            const istDate = new Date(now.getTime() + istOffset);
+            const currentTimeStr = `${String(istDate.getUTCHours()).padStart(2, '0')}:${String(istDate.getUTCMinutes()).padStart(2, '0')}`;
 
             const settings = await AnnouncementSettings.findOne();
             if (!settings || !settings.isEnabled) return;

@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Car, Calendar, DollarSign, Clock, UserCheck } from 'lucide-react';
+import { ArrowLeft, Car, Calendar, DollarSign, Clock, UserCheck, Info, MapPin, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import AuthContext from '../context/AuthContext';
@@ -9,12 +9,162 @@ import moment from 'moment';
 import { formatIST, getIST } from '../utils/dateUtils';
 import GuestLoginModal from '../components/GuestLoginModal';
 
+const BookingDetailModal = ({ booking, onClose }) => {
+    if (!booking) return null;
+
+    const isCarWithDriver = booking.bookingType === 'car_with_driver';
+    const start = getIST(booking.startDate);
+    const end = getIST(booking.endDate);
+    const duration = moment.duration(end.diff(start));
+    const days = Math.floor(duration.asDays());
+    const hours = duration.hours();
+
+    return (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+            <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl overflow-hidden border border-gray-100 flex flex-col max-h-[90vh]">
+                {/* Header */}
+                <div className="p-8 bg-black text-white relative shrink-0">
+                    <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors">
+                        <X size={20} />
+                    </button>
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="p-3 bg-white/10 rounded-2xl">
+                            <Car className="text-white" size={24} />
+                        </div>
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter">Booking Invoice</h3>
+                    </div>
+                    <p className="text-white/50 text-[10px] font-bold uppercase tracking-widest pl-14">Detailed breakdown of your session</p>
+                </div>
+
+                {/* Content */}
+                <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar">
+                    {/* Status Banner */}
+                    <div className="flex items-center justify-between px-2">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Current Status</span>
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                            }`}>
+                            {booking.status}
+                        </span>
+                    </div>
+
+                    {/* Route & Vehicle */}
+                    <div className="space-y-4">
+                        <div className="p-6 bg-gray-50 rounded-[2rem] border border-gray-100 space-y-4">
+                            <div className="flex items-start gap-4">
+                                <div className="p-2 bg-white rounded-xl shadow-sm"><MapPin size={16} className="text-black" /></div>
+                                <div className="flex-1">
+                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Journey Route</p>
+                                    <p className="font-black text-gray-900 text-sm">{booking.pickupLocation} → {booking.dropLocation}</p>
+                                </div>
+                            </div>
+                            <div className="h-[1px] bg-gray-200 w-full opacity-50"></div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2 bg-white rounded-xl shadow-sm"><Clock size={16} className="text-black" /></div>
+                                    <div>
+                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Duration</p>
+                                        <p className="font-black text-gray-900 text-sm">{days > 0 ? `${days}d ` : ''}{hours}h</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Booking Type</p>
+                                    <p className="font-black text-gray-900 text-[10px] uppercase italic">{booking.bookingType.replace(/_/g, ' ')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bill Section */}
+                    <div className="space-y-6">
+                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] px-2 italic">Billing Breakdown</h4>
+                        <div className="space-y-4">
+                            {isCarWithDriver ? (
+                                <>
+                                    <div className="flex justify-between items-center px-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+                                            <label className="text-[11px] font-black text-gray-600 uppercase">Vehicle Charges</label>
+                                        </div>
+                                        <span className="font-black text-gray-900">₹{booking.carRate || '0'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center px-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-orange-600"></div>
+                                            <label className="text-[11px] font-black text-gray-600 uppercase">Driver Allowance</label>
+                                        </div>
+                                        <span className="font-black text-gray-900">₹{booking.driverRate || '0'}</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex justify-between items-center px-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-black"></div>
+                                        <label className="text-[11px] font-black text-gray-600 uppercase">Total Base Fare</label>
+                                    </div>
+                                    <span className="font-black text-gray-900">₹{booking.totalAmount || 'Awaiting'}</span>
+                                </div>
+                            )}
+
+                            {booking.extraKmPrice > 0 && (
+                                <div className="flex justify-between items-center px-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-600"></div>
+                                        <label className="text-[11px] font-black text-gray-600 uppercase">Extra Kms Charges</label>
+                                    </div>
+                                    <span className="font-black text-gray-900">₹{booking.extraKmPrice}</span>
+                                </div>
+                            )}
+
+                            {booking.extraTimePrice > 0 && (
+                                <div className="flex justify-between items-center px-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-600"></div>
+                                        <label className="text-[11px] font-black text-gray-600 uppercase">Extra Time Charges</label>
+                                    </div>
+                                    <span className="font-black text-gray-900">₹{booking.extraTimePrice}</span>
+                                </div>
+                            )}
+
+                            <div className="pt-6 mt-6 border-t-2 border-dashed border-gray-100 flex justify-between items-center px-4">
+                                <div>
+                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Final Payable</p>
+                                    <p className="text-[8px] font-bold text-gray-300 uppercase italic">Inclusive of all taxes</p>
+                                </div>
+                                <span className="text-4xl font-black text-gray-900 tracking-tighter italic">₹{booking.totalAmount || '---'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer Info */}
+                    <div className="pt-4 flex items-center gap-3 opacity-50">
+                        <Info size={14} className="text-gray-400" />
+                        <p className="text-[9px] font-bold text-gray-400 uppercase leading-relaxed">This is a system generated invoice. For any queries contact your provider.</p>
+                    </div>
+                </div>
+
+                {/* Bottom Action */}
+                <div className="p-8 pt-0 mt-auto shrink-0">
+                    <button
+                        onClick={onClose}
+                        className="w-full py-5 bg-black text-white rounded-3xl font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-gray-200 active:scale-95 transition-all"
+                    >
+                        Close Bill
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const CustomerBookings = () => {
     const { user } = useContext(AuthContext);
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const [now, setNow] = useState(new Date());
     const [showGuestModal, setShowGuestModal] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState(null);
 
     const guestUser = JSON.parse(localStorage.getItem('guestUser'));
     const userMobile = user?.mobile || guestUser?.mobile;
@@ -42,7 +192,8 @@ const CustomerBookings = () => {
         };
     }, [userMobile, queryClient]);
 
-    const handleCancel = async (bookingId) => {
+    const handleCancel = async (e, bookingId) => {
+        e.stopPropagation();
         const result = await Swal.fire({
             title: 'Cancel Booking?',
             text: "This action cannot be undone.",
@@ -73,6 +224,7 @@ const CustomerBookings = () => {
     const getStatusColor = (status) => {
         switch (status) {
             case 'confirmed': return 'bg-green-100 text-green-700 font-black';
+            case 'approved': return 'bg-green-100 text-green-700 font-black';
             case 'pending': return 'bg-yellow-100 text-yellow-700 font-black';
             case 'cancelled': return 'bg-red-100 text-red-700 font-black';
             case 'completed': return 'bg-blue-100 text-blue-700 font-black';
@@ -139,7 +291,11 @@ const CustomerBookings = () => {
                             const seconds = Math.floor((diffMs % 60000) / 1000);
 
                             return (
-                                <div key={booking._id} className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl transition-all group flex flex-col overflow-hidden relative">
+                                <div
+                                    key={booking._id}
+                                    onClick={() => setSelectedBooking(booking)}
+                                    className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl transition-all group flex flex-col overflow-hidden relative cursor-pointer active:scale-[0.98]"
+                                >
                                     {/* Status & Cancellation Overlay */}
                                     <div className="absolute top-4 right-4 z-10">
                                         <span className={`text-[10px] px-3 py-1.5 rounded-lg uppercase tracking-widest font-black shadow-sm ${getStatusColor(booking.status)}`}>
@@ -238,7 +394,7 @@ const CustomerBookings = () => {
                                                     </span>
                                                 </div>
                                                 <button
-                                                    onClick={() => handleCancel(booking._id)}
+                                                    onClick={(e) => handleCancel(e, booking._id)}
                                                     className="w-full py-4 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-95 shadow-xl"
                                                 >
                                                     Cancel My Booking
@@ -273,6 +429,13 @@ const CustomerBookings = () => {
                     </div>
                 )}
             </div>
+
+            {selectedBooking && (
+                <BookingDetailModal
+                    booking={selectedBooking}
+                    onClose={() => setSelectedBooking(null)}
+                />
+            )}
         </div>
     );
 };

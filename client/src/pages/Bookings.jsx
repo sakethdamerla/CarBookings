@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
+import PageLoader from '../components/PageLoader';
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -18,7 +19,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Loader2,
-    MapPin
+    MapPin,
+    Save
 } from 'lucide-react';
 import api from '../utils/api';
 import { formatIST, getIST } from '../utils/dateUtils';
@@ -37,7 +39,8 @@ const Bookings = () => {
     const [selectedDateBookings, setSelectedDateBookings] = useState(null);
     const [actionLoading, setActionLoading] = useState(null); // Track specific booking ID being updated
     const [extraChargeModal, setExtraChargeModal] = useState(null); // Stores the booking object
-    const [extraChargeData, setExtraChargeData] = useState({ kms: '', pricePerKm: '' });
+    const [extraChargeType, setExtraChargeType] = useState('kms'); // 'kms' or 'time'
+    const [extraChargeData, setExtraChargeData] = useState({ kms: '', pricePerKm: '', hours: '', pricePerHour: '' });
 
     const fetchBookings = useCallback(async () => {
         try {
@@ -137,10 +140,32 @@ const Bookings = () => {
             // Refresh and close modals
             fetchBookings();
             setExtraChargeModal(null);
-            setExtraChargeData({ kms: '', pricePerKm: '' });
+            setExtraChargeData({ kms: '', pricePerKm: '', hours: '', pricePerHour: '' });
             setSelectedDateBookings(null);
         } catch (error) {
             console.error('Failed to add extra charges:', error);
+            alert("Failed to add extra charges");
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleExtraTimeCharges = async () => {
+        if (!extraChargeModal || !extraChargeData.hours || !extraChargeData.pricePerHour) return;
+
+        const extraAmount = parseFloat(extraChargeData.hours) * parseFloat(extraChargeData.pricePerHour);
+        const newTotal = (extraChargeModal.totalAmount || 0) + extraAmount;
+
+        try {
+            setActionLoading(extraChargeModal._id);
+            await api.put(`/bookings/${extraChargeModal._id}`, { totalAmount: newTotal });
+
+            fetchBookings();
+            setExtraChargeModal(null);
+            setExtraChargeData({ kms: '', pricePerKm: '', hours: '', pricePerHour: '' });
+            setSelectedDateBookings(null);
+        } catch (error) {
+            console.error('Failed to add extra time charges:', error);
             alert("Failed to add extra charges");
         } finally {
             setActionLoading(null);
@@ -312,10 +337,22 @@ const Bookings = () => {
                                             {booking.status === 'confirmed' && (
                                                 <>
                                                     <button
-                                                        onClick={() => setExtraChargeModal(booking)}
+                                                        onClick={() => {
+                                                            setExtraChargeType('kms');
+                                                            setExtraChargeModal(booking);
+                                                        }}
                                                         className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2"
                                                     >
-                                                        Extra Charges
+                                                        Extra KMS
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setExtraChargeType('time');
+                                                            setExtraChargeModal(booking);
+                                                        }}
+                                                        className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                                    >
+                                                        Extra Time
                                                     </button>
                                                     <button
                                                         onClick={() => handleStatusUpdate(booking._id, 'completed', booking.totalAmount)}
@@ -347,60 +384,121 @@ const Bookings = () => {
 
             {/* Extra Charges Modal */}
             {extraChargeModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-in zoom-in duration-200">
-                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm p-8">
-                        <div className="text-center mb-6">
-                            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                                <Plus className="w-8 h-8" />
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-[60] animate-in zoom-in duration-300">
+                    <div className="bg-white rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] w-full max-w-sm overflow-hidden border border-gray-100">
+                        {/* Header */}
+                        <div className={`p-8 text-center relative ${extraChargeType === 'kms' ? 'bg-gradient-to-br from-blue-600 to-indigo-700' : 'bg-gradient-to-br from-purple-600 to-pink-700'}`}>
+                            <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center mx-auto mb-4 border border-white/30 shadow-inner">
+                                {extraChargeType === 'kms' ? <MapPin className="w-10 h-10 text-white" /> : <Clock className="w-10 h-10 text-white" />}
                             </div>
-                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">Extra Charges</h3>
-                            <p className="text-sm text-gray-500 font-medium lowercase italic">Calculate additional costs based on KMs</p>
-                        </div>
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tight italic">Extra {extraChargeType === 'kms' ? 'Distance' : 'Time'}</h3>
+                            <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mt-1">Calculate additional costs</p>
 
-                        <div className="space-y-4 mb-8">
-                            <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Extra KMs Driven</label>
-                                <input
-                                    type="number"
-                                    placeholder="Enter KMs (e.g. 50)"
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-900 placeholder:text-gray-300 transition-all"
-                                    value={extraChargeData.kms}
-                                    onChange={(e) => setExtraChargeData({ ...extraChargeData, kms: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Price per KM (₹)</label>
-                                <input
-                                    type="number"
-                                    placeholder="Enter Price (e.g. 15)"
-                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-900 placeholder:text-gray-300 transition-all"
-                                    value={extraChargeData.pricePerKm}
-                                    onChange={(e) => setExtraChargeData({ ...extraChargeData, pricePerKm: e.target.value })}
-                                />
-                            </div>
-
-                            {extraChargeData.kms && extraChargeData.pricePerKm && (
-                                <div className="p-4 bg-green-50 rounded-2xl border border-green-100 flex items-center justify-between">
-                                    <span className="text-xs font-bold text-green-700 uppercase tracking-tight">Additional:</span>
-                                    <span className="text-lg font-black text-green-800">₹{(parseFloat(extraChargeData.kms) * parseFloat(extraChargeData.pricePerKm)).toLocaleString()}</span>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => setExtraChargeModal(null)}
-                                className="py-4 bg-gray-50 text-gray-400 text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition-all active:scale-95"
+                                className="absolute top-6 right-6 p-2 text-white/50 hover:text-white rounded-full hover:bg-white/10 transition-all"
                             >
-                                Cancel
+                                <X size={20} />
                             </button>
-                            <button
-                                onClick={handleExtraCharges}
-                                disabled={actionLoading || !extraChargeData.kms || !extraChargeData.pricePerKm}
-                                className="py-4 bg-blue-600 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200 disabled:opacity-50 flex items-center justify-center"
-                            >
-                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply Charges'}
-                            </button>
+                        </div>
+
+                        <div className="p-8 space-y-6">
+                            {extraChargeType === 'kms' ? (
+                                <>
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Extra KMs Driven</label>
+                                        <div className="relative group">
+                                            <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                                            <input
+                                                type="number"
+                                                placeholder="e.g. 50"
+                                                className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:bg-white focus:border-blue-600 outline-none font-black text-gray-900 transition-all shadow-inner"
+                                                value={extraChargeData.kms}
+                                                onChange={(e) => setExtraChargeData({ ...extraChargeData, kms: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Price per KM (₹)</label>
+                                        <div className="relative group">
+                                            <div className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-gray-400 group-focus-within:text-blue-600">₹</div>
+                                            <input
+                                                type="number"
+                                                placeholder="e.g. 15"
+                                                className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:bg-white focus:border-blue-600 outline-none font-black text-gray-900 transition-all shadow-inner"
+                                                value={extraChargeData.pricePerKm}
+                                                onChange={(e) => setExtraChargeData({ ...extraChargeData, pricePerKm: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Extra Hours Used</label>
+                                        <div className="relative group">
+                                            <Clock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors" />
+                                            <input
+                                                type="number"
+                                                placeholder="e.g. 3"
+                                                className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:bg-white focus:border-purple-600 outline-none font-black text-gray-900 transition-all shadow-inner"
+                                                value={extraChargeData.hours}
+                                                onChange={(e) => setExtraChargeData({ ...extraChargeData, hours: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Price per Hour (₹)</label>
+                                        <div className="relative group">
+                                            <div className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-gray-400 group-focus-within:text-purple-600">₹</div>
+                                            <input
+                                                type="number"
+                                                placeholder="e.g. 200"
+                                                className="w-full pl-14 pr-6 py-5 bg-gray-50 border-2 border-transparent rounded-[2rem] focus:bg-white focus:border-purple-600 outline-none font-black text-gray-900 transition-all shadow-inner"
+                                                value={extraChargeData.pricePerHour}
+                                                onChange={(e) => setExtraChargeData({ ...extraChargeData, pricePerHour: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Summary View */}
+                            {((extraChargeType === 'kms' && extraChargeData.kms && extraChargeData.pricePerKm) ||
+                                (extraChargeType === 'time' && extraChargeData.hours && extraChargeData.pricePerHour)) && (
+                                    <div className={`p-6 rounded-[2rem] border-2 flex items-center justify-between animate-in slide-in-from-bottom-2 duration-300 ${extraChargeType === 'kms' ? 'bg-blue-50 border-blue-100 shadow-lg shadow-blue-500/10' : 'bg-purple-50 border-purple-100 shadow-lg shadow-purple-500/10'}`}>
+                                        <div>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Added Total</p>
+                                            <p className={`text-2xl font-black ${extraChargeType === 'kms' ? 'text-blue-600' : 'text-purple-600'}`}>
+                                                ₹{extraChargeType === 'kms'
+                                                    ? (parseFloat(extraChargeData.kms) * parseFloat(extraChargeData.pricePerKm)).toLocaleString()
+                                                    : (parseFloat(extraChargeData.hours) * parseFloat(extraChargeData.pricePerHour)).toLocaleString()
+                                                }
+                                            </p>
+                                        </div>
+                                        <div className={`p-3 rounded-2xl ${extraChargeType === 'kms' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'}`}>
+                                            <ArrowUpRight size={20} />
+                                        </div>
+                                    </div>
+                                )}
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => setExtraChargeModal(null)}
+                                    className="py-5 bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-[1.5rem] hover:bg-gray-100 transition-all active:scale-95"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={extraChargeType === 'kms' ? handleExtraCharges : handleExtraTimeCharges}
+                                    disabled={actionLoading ||
+                                        (extraChargeType === 'kms' ? (!extraChargeData.kms || !extraChargeData.pricePerKm) : (!extraChargeData.hours || !extraChargeData.pricePerHour))}
+                                    className={`py-5 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-[1.5rem] transition-all active:scale-95 shadow-2xl disabled:opacity-50 flex items-center justify-center gap-2 ${extraChargeType === 'kms' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/30' : 'bg-purple-600 hover:bg-purple-700 shadow-purple-600/30'}`}
+                                >
+                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save size={16} />}
+                                    Apply
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -408,9 +506,7 @@ const Bookings = () => {
 
             <div className="bg-white rounded-[2.5rem] shadow-xl shadow-gray-100 border border-gray-100 overflow-hidden min-h-[500px] p-2 md:p-8">
                 {loading ? (
-                    <div className="flex justify-center items-center h-[500px]">
-                        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-                    </div>
+                    <PageLoader />
                 ) : view === 'calendar' ? (
                     <div className="h-[450px] md:h-[750px] booking-calendar text-[10px] md:text-sm">
                         <BigCalendar
