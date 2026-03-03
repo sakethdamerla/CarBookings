@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import api from '../utils/api';
-import { User, Mail, Phone, Lock, Save, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Phone, Lock, Save, Loader2, AlertCircle, CheckCircle2, MapPin, Plus, X } from 'lucide-react';
 
 const AdminProfile = () => {
     const { user, login } = useContext(AuthContext);
@@ -16,9 +16,23 @@ const AdminProfile = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [showChangePassword, setShowChangePassword] = useState(false);
+    const [mainLocation, setMainLocation] = useState(user?.mainLocation || '');
+    const [nearbyLocations, setNearbyLocations] = useState(user?.nearbyLocations || []);
+    const [newNearbyLocation, setNewNearbyLocation] = useState('');
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const addNearbyLocation = () => {
+        if (newNearbyLocation.trim()) {
+            setNearbyLocations([...nearbyLocations, newNearbyLocation.trim()]);
+            setNewNearbyLocation('');
+        }
+    };
+
+    const removeNearbyLocation = (index) => {
+        setNearbyLocations(nearbyLocations.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e) => {
@@ -37,6 +51,8 @@ const AdminProfile = () => {
                 username: formData.username,
                 email: formData.email,
                 mobile: formData.mobile,
+                mainLocation: mainLocation,
+                nearbyLocations: nearbyLocations,
                 password: formData.password || undefined
             });
 
@@ -64,8 +80,8 @@ const AdminProfile = () => {
                 <p className="text-gray-500">Manage your account settings and credentials</p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-8">
+            <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-5 md:p-8">
                     {message.text && (
                         <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100'
                             }`}>
@@ -135,6 +151,60 @@ const AdminProfile = () => {
                                 />
                             </div>
 
+                            <div className="space-y-4 col-span-full pt-4 border-t border-gray-50">
+                                <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2">
+                                    <MapPin className="w-4 h-4 text-purple-600" /> Service Areas
+                                </h3>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Main Base Location</label>
+                                    <input
+                                        type="text"
+                                        value={mainLocation}
+                                        onChange={(e) => setMainLocation(e.target.value)}
+                                        className="w-full p-3 bg-white border-2 border-purple-100 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all font-bold text-gray-700"
+                                        placeholder="e.g. Main City "
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Nearby Locations</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={newNearbyLocation}
+                                            onChange={(e) => setNewNearbyLocation(e.target.value)}
+                                            className="flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:bg-white outline-none transition-all text-sm"
+                                            placeholder="Add nearby area (e.g. City Center, Railway Station)"
+                                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addNearbyLocation())}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={addNearbyLocation}
+                                            className="px-4 bg-purple-100 text-purple-600 rounded-xl font-bold hover:bg-purple-200 transition-colors"
+                                        >
+                                            <Plus className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        {nearbyLocations.map((loc, index) => (
+                                            <div key={index} className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-[10px] font-bold uppercase tracking-wider group border border-purple-100">
+                                                <span>{loc}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeNearbyLocation(index)}
+                                                    className="hover:text-red-500 transition-colors"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {nearbyLocations.length === 0 && (
+                                            <p className="text-[10px] text-gray-400 italic">No nearby locations added yet.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {!showChangePassword ? (

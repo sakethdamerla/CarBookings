@@ -20,7 +20,7 @@ const getStats = asyncHandler(async (req, res) => {
 
     const totalCars = await Car.countDocuments(query);
     const totalDrivers = await Driver.countDocuments(query);
-    const totalBookings = await Booking.countDocuments(query);
+    const totalBookings = await Booking.countDocuments({ ...query, status: { $nin: ['rejected', 'cancelled'] } });
 
     // Calculate total revenue (confirmed and completed)
     const bookings = await Booking.find({ ...query, status: { $in: ['confirmed', 'completed'] } });
@@ -44,6 +44,8 @@ const getStats = asyncHandler(async (req, res) => {
         }
         pipeline.push({ $match: matchQuery });
     }
+
+    pipeline.push({ $match: { status: { $nin: ['rejected', 'cancelled'] } } });
 
     pipeline.push(
         {

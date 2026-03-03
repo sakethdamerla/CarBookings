@@ -17,6 +17,9 @@ const CustomerHome = () => {
     const [notificationPermission, setNotificationPermission] = useState(
         'Notification' in window ? Notification.permission : 'denied'
     );
+    const [filterLocation, setFilterLocation] = useState('');
+    const [sortBy, setSortBy] = useState(''); // 'price_low_high', 'price_high_low'
+    const [showFilters, setShowFilters] = useState(false);
     const navigate = useNavigate();
 
     // Mock categories/brands for UI matching
@@ -47,10 +50,26 @@ const CustomerHome = () => {
         }
     };
 
-    const filteredCars = cars.filter(car =>
-        car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        car.model.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredCars = cars
+        .filter(car =>
+            (car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                car.model.toLowerCase().includes(searchTerm.toLowerCase())) &&
+            (filterLocation === '' ||
+                car.owner?.mainLocation?.toLowerCase() === filterLocation.toLowerCase() ||
+                car.owner?.nearbyLocations?.some(loc => loc.toLowerCase() === filterLocation.toLowerCase()))
+        )
+        .sort((a, b) => {
+            if (sortBy === 'price_low_high') return a.pricePer24h - b.pricePer24h;
+            if (sortBy === 'price_high_low') return b.pricePer24h - a.pricePer24h;
+            return 0;
+        });
+
+    const uniqueLocations = Array.from(new Set(
+        cars.flatMap(car => [
+            car.owner?.mainLocation,
+            ...(car.owner?.nearbyLocations || [])
+        ]).filter(Boolean)
+    ));
 
     const handleNav = (path) => {
         navigate(path);
@@ -114,9 +133,71 @@ const CustomerHome = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-14 pr-14 py-4 md:py-5 bg-white text-gray-800 rounded-2xl shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-400 text-sm md:text-base font-medium"
                         />
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-gray-100 p-2 md:p-3 rounded-xl text-gray-900 cursor-pointer hover:bg-gray-200 transition-colors">
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-xl transition-all ${showFilters ? 'bg-black text-white' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}
+                        >
                             <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                        </div>
+                        </button>
+
+                        {/* Filter Dropdown */}
+                        {showFilters && (
+                            <div className="absolute top-full mt-4 left-0 right-0 bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 z-50 animate-in slide-in-from-top-4 duration-300">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                            <MapPin className="w-3 h-3" /> Location
+                                        </h4>
+                                        <div className="flex flex-wrap md:flex-wrap gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                            <button
+                                                onClick={() => setFilterLocation('')}
+                                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border shrink-0 ${filterLocation === '' ? 'bg-black text-white border-black' : 'bg-gray-50 text-gray-600 border-gray-100 hover:border-gray-300'}`}
+                                            >
+                                                All Areas
+                                            </button>
+                                            {uniqueLocations.map(loc => (
+                                                <button
+                                                    key={loc}
+                                                    onClick={() => setFilterLocation(loc)}
+                                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border shrink-0 ${filterLocation === loc ? 'bg-black text-white border-black' : 'bg-gray-50 text-gray-600 border-gray-100 hover:border-gray-300'}`}
+                                                >
+                                                    {loc}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Settings2 className="w-3 h-3" /> Sort By
+                                        </h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {[
+                                                { id: '', label: 'Default' },
+                                                { id: 'price_low_high', label: 'Price: Low to High' },
+                                                { id: 'price_high_low', label: 'Price: High to Low' }
+                                            ].map(sort => (
+                                                <button
+                                                    key={sort.id}
+                                                    onClick={() => setSortBy(sort.id)}
+                                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${sortBy === sort.id ? 'bg-black text-white border-black' : 'bg-gray-50 text-gray-600 border-gray-100 hover:border-gray-300'}`}
+                                                >
+                                                    {sort.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-8 pt-6 border-t border-gray-50 flex justify-end">
+                                    <button
+                                        onClick={() => setShowFilters(false)}
+                                        className="bg-black text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-zinc-800 transition-all active:scale-95"
+                                    >
+                                        Apply Filters
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -127,7 +208,9 @@ const CustomerHome = () => {
                     <div className="flex justify-between items-end mb-8 px-2">
                         <div>
                             <h2 className="font-black text-2xl md:text-3xl text-gray-900 tracking-tight">Popular Cars</h2>
-                            <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-widest mt-1">Available in 10+ locations</p>
+                            <p className="text-gray-500 text-xs md:text-sm font-bold uppercase tracking-widest mt-1">
+                                {filterLocation ? `Showing in ${filterLocation}` : `Available in ${uniqueLocations.length}+ locations`}
+                            </p>
                         </div>
                         <button className="text-black text-sm font-black uppercase tracking-widest hover:underline decoration-4 underline-offset-8">See All</button>
                     </div>
@@ -137,7 +220,7 @@ const CustomerHome = () => {
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 gap-4 md:gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {filteredCars.map(car => (
                                 <div
                                     key={car._id}
@@ -162,10 +245,14 @@ const CustomerHome = () => {
                                             <div className="w-4 h-4 bg-black rounded-lg flex items-center justify-center text-[6px] font-black text-white shrink-0">
                                                 {car.owner?.name?.charAt(0) || 'P'}
                                             </div>
-                                            <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis">
+                                            <div className="text-[8px] font-black text-gray-500 uppercase tracking-widest whitespace-nowrap overflow-hidden text-ellipsis flex items-center gap-1 justify-center">
                                                 <span className="text-gray-900">{car.owner?.username || car.owner?.name || 'Official'}</span>
-                                                {car.owner?.mobile && <span className="text-gray-400 ml-1.5">• {car.owner.mobile}</span>}
-                                            </p>
+                                                <span className="text-blue-500 flex items-center gap-0.5 ml-1">
+                                                    <MapPin className="w-2 h-2" />
+                                                    {car.owner?.mainLocation || 'Official'}
+                                                    {car.owner?.nearbyLocations?.length > 0 && ` +${car.owner.nearbyLocations.length}`}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -52,6 +52,14 @@ const userSchema = mongoose.Schema({
     subscriptionEndDate: {
         type: Date,
         default: null
+    },
+    mainLocation: {
+        type: String,
+        default: ''
+    },
+    nearbyLocations: {
+        type: [String],
+        default: []
     }
 }, {
     timestamps: true,

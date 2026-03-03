@@ -316,7 +316,7 @@ const BookCar = () => {
                     {/* Right Column: Summary & Confirmation */}
                     <div className="lg:w-2/5 space-y-8">
                         {/* Car Summary */}
-                        <div className="bg-gray-900 text-white p-8 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                        <div className="bg-gray-900 text-white p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-2xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
 
                             <div className="relative z-10 flex items-center gap-6 mb-8 pb-8 border-b border-white/10 text-left">
@@ -356,7 +356,7 @@ const BookCar = () => {
                         {/* Driver Choice */}
                         <div
                             onClick={() => setBookingType(bookingType === 'car_only' ? 'car_with_driver' : 'car_only')}
-                            className={`p-8 rounded-[3rem] border-2 transition-all cursor-pointer group flex items-center gap-6 ${bookingType === 'car_with_driver' ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'}`}
+                            className={`p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border-2 transition-all cursor-pointer group flex items-center gap-6 ${bookingType === 'car_with_driver' ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'}`}
                         >
                             <div className={`w-16 h-16 rounded-[2rem] flex items-center justify-center transition-all ${bookingType === 'car_with_driver' ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'}`}>
                                 {bookingType === 'car_with_driver' ? <UserCheck className="w-8 h-8" /> : <CarIcon className="w-8 h-8" />}
@@ -391,7 +391,7 @@ const BookCar = () => {
                 </div>
 
                 {/* Delivery Details moved to bottom */}
-                <div className="mt-10 bg-white p-8 md:p-10 rounded-[3rem] border border-gray-100 shadow-xl space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                <div className="mt-10 bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-gray-100 shadow-xl space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
                     <div>
                         <h3 className="font-black text-gray-900 text-xl tracking-tighter uppercase">Delivery Details</h3>
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Where should we handle the car?</p>
@@ -413,6 +413,41 @@ const BookCar = () => {
                             {errors.pickupLocation && (
                                 <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mt-2 ml-1 animate-in fade-in slide-in-from-top-1">
                                     {errors.pickupLocation}
+                                </div>
+                            )}
+
+                            {(car.owner?.mainLocation || car.owner?.nearbyLocations?.length > 0) && (
+                                <div className="mt-4 pt-4 border-t border-gray-50 space-y-3">
+                                    <p className="w-full text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                        <MapPin className="w-3 h-3" /> Suggessted Pickup Locations
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {car.owner.mainLocation && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setPickupLocation(car.owner.mainLocation)}
+                                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm border ${pickupLocation === car.owner.mainLocation
+                                                    ? 'bg-black text-white border-black'
+                                                    : 'bg-white text-blue-600 border-blue-100 hover:border-black hover:text-black'
+                                                    }`}
+                                            >
+                                                Main: {car.owner.mainLocation}
+                                            </button>
+                                        )}
+                                        {car.owner.nearbyLocations?.map((loc, index) => (
+                                            <button
+                                                key={index}
+                                                type="button"
+                                                onClick={() => setPickupLocation(loc)}
+                                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm border ${pickupLocation === loc
+                                                    ? 'bg-black text-white border-black'
+                                                    : 'bg-white text-gray-600 border-gray-100 hover:border-black hover:text-black'
+                                                    }`}
+                                            >
+                                                {loc}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>

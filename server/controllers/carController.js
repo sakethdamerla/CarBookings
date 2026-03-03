@@ -14,7 +14,7 @@ const getCars = asyncHandler(async (req, res) => {
             query.owner = req.query.ownerId;
         }
     }
-    const cars = await Car.find(query).populate('owner', 'name username email mobile');
+    const cars = await Car.find(query).populate('owner', 'name username email mobile mainLocation nearbyLocations');
     res.json(cars);
 });
 
@@ -22,7 +22,7 @@ const getCars = asyncHandler(async (req, res) => {
 // @route   GET /api/cars/:id
 // @access  Private
 const getCar = asyncHandler(async (req, res) => {
-    const car = await Car.findById(req.params.id).populate('owner', 'name username email mobile');
+    const car = await Car.findById(req.params.id).populate('owner', 'name username email mobile mainLocation nearbyLocations');
 
     if (car) {
         res.json(car);

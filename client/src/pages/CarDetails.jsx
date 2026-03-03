@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { ArrowLeft, Share2, Heart, Star, ChevronRight, Check, ShieldCheck, Zap, Fuel, Users, User, Settings2, Compass, Info } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, Star, ChevronRight, Check, ShieldCheck, Zap, Fuel, Users, User, Settings2, Compass, Info, MapPin } from 'lucide-react';
 
 const CarDetails = () => {
     const { id } = useParams();
@@ -58,15 +58,50 @@ const CarDetails = () => {
                             />
                         </div>
                         {car.owner && (
-                            <div className="flex items-center gap-3 p-6 bg-gray-50 rounded-3xl border border-gray-100 w-fit">
-                                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white text-xs font-black">
-                                    {car.owner?.name?.charAt(0) || 'P'}
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Provided By</p>
-                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">{car.owner?.username || car.owner?.name || 'Official Provider'}</p>
-                                    {car.owner?.mobile && (
-                                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">{car.owner.mobile}</p>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center gap-3 p-5 md:p-6 bg-gray-50 rounded-[2rem] md:rounded-3xl border border-gray-100 w-full lg:w-fit">
+                                        <div className="w-10 h-10 md:w-12 md:h-12 bg-black rounded-xl md:rounded-2xl flex items-center justify-center text-white text-xs md:text-sm font-black">
+                                            {car.owner?.name?.charAt(0) || 'P'}
+                                        </div>
+                                        <div>
+                                            <p className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Provided By</p>
+                                            <p className="text-sm md:text-base font-black text-gray-900 uppercase tracking-tight">{car.owner?.username || car.owner?.name || 'Official Provider'}</p>
+                                            {car.owner?.mobile && (
+                                                <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">{car.owner.mobile}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {(car.owner?.mainLocation || car.owner?.nearbyLocations?.length > 0) && (
+                                        <div className="p-5 md:p-6 bg-purple-50 rounded-[2rem] md:rounded-3xl border border-purple-100 w-full lg:max-w-md">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <MapPin className="w-5 h-5 text-purple-600" />
+                                                <p className="text-xs font-black text-purple-700 uppercase tracking-tight">Service Areas</p>
+                                            </div>
+                                            <div className="space-y-4">
+                                                {car.owner?.mainLocation && (
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Main Base</p>
+                                                        <div className="px-4 py-2 bg-black text-white rounded-xl text-xs font-black uppercase tracking-widest w-fit">
+                                                            {car.owner.mainLocation}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {car.owner?.nearbyLocations?.length > 0 && (
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Nearby Points</p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {car.owner.nearbyLocations.map((loc, index) => (
+                                                                <div key={index} className="px-3 py-1 bg-white border border-purple-200 rounded-lg text-[10px] font-bold text-purple-700 uppercase tracking-wider">
+                                                                    {loc}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>

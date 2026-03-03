@@ -29,6 +29,8 @@ const authUser = asyncHandler(async (req, res) => {
             email: user.email,
             role: user.role,
             permissions: user.permissions,
+            mainLocation: user.mainLocation,
+            nearbyLocations: user.nearbyLocations,
             subscriptionEndDate: user.subscriptionEndDate,
             token: generateToken(user._id),
         });
@@ -65,6 +67,8 @@ const registerUser = asyncHandler(async (req, res) => {
             username: user.username,
             email: user.email,
             role: user.role,
+            mainLocation: user.mainLocation,
+            nearbyLocations: user.nearbyLocations,
             notificationsEnabled: user.notificationsEnabled,
             token: generateToken(user._id),
         });
@@ -88,6 +92,8 @@ const getUserProfile = asyncHandler(async (req, res) => {
             email: user.email,
             role: user.role,
             permissions: user.permissions,
+            mainLocation: user.mainLocation,
+            nearbyLocations: user.nearbyLocations,
             subscriptionEndDate: user.subscriptionEndDate,
         });
     } else {
@@ -313,6 +319,14 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             user.notificationsEnabled = req.body.notificationsEnabled;
         }
 
+        if (req.body.mainLocation !== undefined) {
+            user.mainLocation = req.body.mainLocation;
+        }
+
+        if (req.body.nearbyLocations !== undefined) {
+            user.nearbyLocations = req.body.nearbyLocations;
+        }
+
         if (req.body.password) {
             user.password = req.body.password;
         }
@@ -327,6 +341,8 @@ const updateUserProfile = asyncHandler(async (req, res) => {
             mobile: updatedUser.mobile,
             role: updatedUser.role,
             permissions: updatedUser.permissions,
+            mainLocation: updatedUser.mainLocation,
+            nearbyLocations: updatedUser.nearbyLocations,
             subscriptionEndDate: updatedUser.subscriptionEndDate,
             notificationsEnabled: updatedUser.notificationsEnabled,
             token: generateToken(updatedUser._id),
